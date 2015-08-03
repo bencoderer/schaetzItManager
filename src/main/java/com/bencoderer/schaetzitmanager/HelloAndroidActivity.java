@@ -1,4 +1,4 @@
-package com.codenvy.template.android;
+package com.bencoderer.schaetzitmanager;
 
 import android.app.Activity;
 import android.os.Bundle;
