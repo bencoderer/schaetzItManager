@@ -9,11 +9,16 @@
             android:targetSdkVersion="17"/>
 
     <application
+                 android:name="com.activeandroid.app.Application"
             android:allowBackup="true"
             android:icon="@drawable/ic_launcher"
             android:label="@string/app_name"
             android:theme="@style/AppTheme">
-        <activity android:name="com.bencoderer.schaetzitmanager.HelloAndroidActivity">
+      
+        <meta-data android:name="AA_DB_NAME" android:value="SchaetzItManager.db" />
+        <meta-data android:name="AA_DB_VERSION" android:value="1" />
+      
+        <activity android:name="com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
