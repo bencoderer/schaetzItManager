@@ -4,7 +4,8 @@
     <string name="app_name">SchätzIt Manager</string>
     <string name="found_persons">Gefundene Personen</string>
     <string name="addSchaetzung">Schätzung speichern</string>
-    <string name="action_settings">Settings</string>
+    <string name="letzte_schaetzungen">letzte Schätzungen</string>
+    <string name="action_import_persons">Personen importieren</string>
     <string name="hello_world">Hello world!</string>
     <string name="schaetzer_ref_hint">Name und Adresse des Schätzers</string>
     <string name="schaetzer_ref">Schätzer</string>

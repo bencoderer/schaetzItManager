@@ -17,8 +17,10 @@
       
         <meta-data android:name="AA_DB_NAME" android:value="SchaetzItManager.db" />
         <meta-data android:name="AA_DB_VERSION" android:value="1" />
+        <provider android:authorities="com.bencoderer.schaetzitmanager" android:exported="false"    
+              android:name="com.activeandroid.content.ContentProvider" />
       
-        <activity android:name="com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity">
+        <activity android:name="com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity" android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

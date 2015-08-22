@@ -5,15 +5,20 @@ import java.util.List;
 
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Column.ForeignKeyAction;
+import com.activeandroid.annotation.Table;
+import android.provider.BaseColumns;
 
+@Table(name = "Schaetzer", id = BaseColumns._ID)
 public class Schaetzer extends BaseModel {
     public static String CLASSNAME = "Schaetzer";
   
     // This is a regular field
-    @Column(name = "NameUndAdresse")
+    public static final String NAMEUNDADRESSE_COLUMN = "NameUndAdresse";
+    @Column(name = NAMEUNDADRESSE_COLUMN)
     public String nameUndAdresse;
   
-    @Column(name = "Indate")
+    public static final String INDATE_COLUMN = "Indate";
+    @Column(name = INDATE_COLUMN)
     public Date indate;
 
     @Column(name = "Person", onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE, notNull = false)

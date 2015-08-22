@@ -5,7 +5,7 @@
             android:shrinkColumns="*" 
             android:stretchColumns="*">
 
-                        <!-- Row 3 with 2 columns -->
+                        <!-- Row 1 with 2 columns -->
 
                         <TableRow
                             android:layout_height="wrap_content"
@@ -13,8 +13,11 @@
                             android:gravity="center_horizontal">
                             
                           <LinearLayout
+                                android:id="@+id/schaetzer"
                                 android:orientation="vertical"
                                 android:layout_weight="1"  
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
                                 android:gravity="center"
                                         >
                             <!-- column 1 -->
@@ -30,39 +33,115 @@
                              </EditText>
                             
                             <LinearLayout
-                               android:orientation="horizontal"
+                               android:id="@+id/schaetzwerte"
+                               android:layout_width="match_parent"
+                               android:layout_height="wrap_content"
+                               android:orientation="vertical"
                                >
-                              <EditText android:id="@+id/schaetzung01" android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:ems="10"
-                                        android:inputType="number"
-                                > 
-                               </EditText>
-                              <EditText android:id="@+id/schaetzung02" android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:ems="10"
-                                        android:inputType="number"
-                                > 
-                               </EditText>
-                              <EditText android:id="@+id/schaetzung03" android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" android:ems="10"
-                                        android:inputType="number"
-                                > 
-                               </EditText>
-                              
+                            
+                              <LinearLayout
+                                 android:layout_width="match_parent"
+                                 android:layout_height="wrap_content"
+                                 android:orientation="horizontal"
+                                 android:weightSum="3"
+                                 >
+                                <EditText android:id="@+id/schaetzung01"
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                                <EditText android:id="@+id/schaetzung02" 
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                                <EditText android:id="@+id/schaetzung03"
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                              </LinearLayout>
+                              <LinearLayout
+                                 android:layout_width="match_parent"
+                                 android:layout_height="wrap_content"
+                                 android:orientation="horizontal"
+                                 android:weightSum="3"
+                                 >
+                                <EditText android:id="@+id/schaetzung04"
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                                <EditText android:id="@+id/schaetzung05" 
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                                <EditText android:id="@+id/schaetzung06"
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                              </LinearLayout>
+                              <LinearLayout
+                                 android:layout_width="match_parent"
+                                 android:layout_height="wrap_content"
+                                 android:orientation="horizontal"
+                                 android:weightSum="3"
+                                 >
+                                <EditText android:id="@+id/schaetzung07"
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                                <EditText android:id="@+id/schaetzung08" 
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                                <EditText android:id="@+id/schaetzung09"
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                              </LinearLayout>
+                              <LinearLayout
+                                 android:layout_width="match_parent"
+                                 android:layout_height="wrap_content"
+                                 android:orientation="horizontal"
+                                 android:weightSum="3"
+                                 >
+                                <EditText android:id="@+id/schaetzung10"
+                                          style="@style/SchaetzwertInput"
+                                  > 
+                                 </EditText>
+                              </LinearLayout>
                             </LinearLayout>
+                            
                              <Button
                                 android:id="@+id/addSchaetzungButton"
                                 android:onClick="addSchaetzung"
-
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
                                 android:text="@string/addSchaetzung" />
+                            
+                            <TextView
+                                      android:text="@string/letzte_schaetzungen"
+                                      android:layout_width="match_parent"
+                                      android:layout_height="wrap_content"
+                                      />
+                            <ListView
+                                      android:id="@+id/listNeuesteSchaetzungen"
+                                      android:layout_width="match_parent"
+                                      android:scrollbars="vertical"
+                                      android:layout_height="200dip"
+                                      android:background="@drawable/border_ui"
+                                      >
+                            </ListView>
                           </LinearLayout>
                           <LinearLayout
                                 android:orientation="vertical"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
                                 android:layout_weight="1"  
                                 android:gravity="center"
                                         >
                             <!-- column2 -->
                             <TextView
                                       android:text="@string/found_persons"
+                                      android:layout_width="fill_parent"
+                                      android:layout_height="wrap_content"
                                       />
                             <ListView
                                  android:id="@+id/listViewFoundPersons"
