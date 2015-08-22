@@ -16,6 +16,13 @@ public class SchaetzItManager{
     
   }
   
+  public List<Person> getPersonsMatching(String matchingText) {
+    return new Select().from(Person.class)
+      .where("Name LIKE ? or Adresse LIKE ?", "%"+matchingText+"%", "%"+matchingText+"%")
+      .orderBy("Name")
+      .execute();
+  }
+  
   public void clearPersons() {
       new Delete().from(Person.class).execute();
   }

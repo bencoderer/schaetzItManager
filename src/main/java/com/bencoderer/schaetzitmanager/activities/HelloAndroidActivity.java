@@ -2,16 +2,23 @@ package com.bencoderer.schaetzitmanager.activities;
 
 import com.activeandroid.content.ContentProvider;
 import com.bencoderer.schaetzitmanager.R;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -19,8 +26,13 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
+import com.bencoderer.schaetzitmanager.adapters.MatchingPersonAdapter;
+import com.bencoderer.schaetzitmanager.data.Person;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
+import com.bencoderer.schaetzitmanager.helpers.FileDialog;
+import com.bencoderer.schaetzitmanager.managers.ImportPersonFromCSVTask;
 import com.bencoderer.schaetzitmanager.managers.SchaetzItManager;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.app.LoaderManager;
@@ -33,6 +45,12 @@ public class HelloAndroidActivity extends Activity {
   
     private SchaetzItManager mMgr;
     private ListView vSchaetzerList;
+    private EditText vSchaetzerRef;
+  
+    public final String TAG  = "SchaetzItManagerMain";
+    private List<Person> mMatchingPersons;
+    private ListView vMatchingPersons;
+    private MatchingPersonAdapter mMatchingPersonAdapter;
 
     /**
      * Called when the activity is first created.
@@ -51,7 +69,7 @@ public class HelloAndroidActivity extends Activity {
       
       vSchaetzerList = (ListView)this.findViewById(R.id.listNeuesteSchaetzungen);
       this.registerForContextMenu(vSchaetzerList);
-      
+      vSchaetzerRef = (EditText)this.findViewById(R.id.schaetzerRef);
       
       vSchaetzerList.setAdapter(new SimpleCursorAdapter(this,
         R.layout.simple_schaetzer_list_item,
@@ -59,6 +77,42 @@ public class HelloAndroidActivity extends Activity {
         new String[] { Schaetzer.NAMEUNDADRESSE_COLUMN },
         new int[] { R.id.schaetzer_nameUndAdresse },
         0));
+      
+      
+      vSchaetzerRef.addTextChangedListener(new TextWatcher() {
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before,
+                int count) {
+            lookupPersons(s.toString());
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count,
+                int after) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable arg0) {
+            
+            
+        }
+    });
+      
+       mMatchingPersons = new ArrayList<Person>();
+       
+       mMatchingPersonAdapter = new MatchingPersonAdapter(this,
+                R.layout.listview_matchingperson_row, mMatchingPersons);
+       
+       
+        vMatchingPersons = (ListView)findViewById(R.id.matching_persons);
+        
+        //View header = (View)getLayoutInflater().inflate(R.layout.listview_header_row, null);
+        //vMatchingPersons.addHeaderView(header);
+       
+        vMatchingPersons.setAdapter(mMatchingPersonAdapter);
+    
       
       /*
       ArrayList<String> list = new ArrayList<String>();
@@ -68,7 +122,45 @@ public class HelloAndroidActivity extends Activity {
       */
     }
   
-   @Override
+   /**
+     * @param string
+     */
+    protected void lookupPersons(String lookupText) {
+      AsyncTask<String,String,List<Person>> task = new AsyncTask<String,String,List<Person>>(){
+        @Override
+        protected List<Person> doInBackground(String... params) {
+
+              Log.d(TAG, "fetch persons matching: " + params[0]);
+
+              try{
+               
+                return mMgr.getPersonsMatching(params[0]);
+                
+              } catch (Exception e) {
+                Log.e("Error", "Error for fetching person: " + e.toString());
+                return null;
+              }
+          }
+
+          protected void onPostExecute(List<Person> result)
+          {
+              mMatchingPersons.clear();
+            
+              if (result != null) {
+                mMatchingPersons.addAll(result);
+                mMatchingPersonAdapter.notifyDataSetChanged();
+              }
+              else {
+                mMatchingPersonAdapter.notifyDataSetChanged();
+                //mMatchingPersonAdapter.notifyDataSetInvalidated(); //not useful here
+              }
+          }
+      };
+      
+      task.execute(lookupText);
+    }
+
+@Override
    public void onCreateContextMenu(ContextMenu menu, View v,
            ContextMenuInfo menuInfo) {
        super.onCreateContextMenu(menu, v, menuInfo);
@@ -86,12 +178,46 @@ public class HelloAndroidActivity extends Activity {
         return true;
     }
 
-  @Override
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch(item.getItemId()) {
+
+        case R.id.action_import_persons:
+            importPersons();
+            break;
+        }
+        return true;
+    }
+  
+
+
+@Override
   public void onStart(){
       super.onStart();
       
       this.loadLatestSchaetzungen();
   }
+  
+    /**
+     * 
+     */
+    private void importPersons() { 
+      final Activity myActivity = this;
+      final Context myContext = getApplicationContext();
+      File mPath = new File(Environment.getExternalStorageDirectory() + "//DIR//");
+      FileDialog fileDialog = new FileDialog(myActivity, mPath);
+      fileDialog.setFileEndsWith(".csv");
+      fileDialog.addFileListener(new FileDialog.FileSelectedListener() {
+
+        @Override
+        public void fileSelected(File file) {
+          new ImportPersonFromCSVTask(myActivity,myActivity,file, mMgr).execute(); //execute asyncTask to import data into database from selected file.            
+        }
+
+      });
+      fileDialog.showDialog();
+        
+    }
   
   public void addSchaetzung(View view){
       try

@@ -1,0 +1,2 @@
+Keep View when Keyboard gets visible:
+http://stackoverflow.com/questions/4207880/android-how-do-i-prevent-the-soft-keyboard-from-pushing-my-view-up

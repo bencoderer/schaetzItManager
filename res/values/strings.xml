@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">SchätzIt Manager</string>
-    <string name="found_persons">Gefundene Personen</string>
+    <string name="matching_persons">Gefundene Personen</string>
     <string name="addSchaetzung">Schätzung speichern</string>
     <string name="letzte_schaetzungen">letzte Schätzungen</string>
     <string name="action_import_persons">Personen importieren</string>
