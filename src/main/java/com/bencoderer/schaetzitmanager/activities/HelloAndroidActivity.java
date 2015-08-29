@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.NotificationCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -21,6 +22,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -30,13 +33,18 @@ import com.bencoderer.schaetzitmanager.adapters.MatchingPersonAdapter;
 import com.bencoderer.schaetzitmanager.data.Person;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.helpers.FileDialog;
+import com.bencoderer.schaetzitmanager.managers.ExportSchaetzungenToExcelFile;
 import com.bencoderer.schaetzitmanager.managers.ImportPersonFromCSVTask;
 import com.bencoderer.schaetzitmanager.managers.SchaetzItManager;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 
 public class HelloAndroidActivity extends Activity {
 
@@ -51,6 +59,7 @@ public class HelloAndroidActivity extends Activity {
     private List<Person> mMatchingPersons;
     private ListView vMatchingPersons;
     private MatchingPersonAdapter mMatchingPersonAdapter;
+    
 
     /**
      * Called when the activity is first created.
@@ -90,7 +99,7 @@ public class HelloAndroidActivity extends Activity {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count,
                 int after) {
-
+          vSchaetzerRef.setTag(null);
         }
 
         @Override
@@ -106,14 +115,26 @@ public class HelloAndroidActivity extends Activity {
                 R.layout.listview_matchingperson_row, mMatchingPersons);
        
        
-        vMatchingPersons = (ListView)findViewById(R.id.matching_persons);
+       vMatchingPersons = (ListView)findViewById(R.id.matching_persons);
         
         //View header = (View)getLayoutInflater().inflate(R.layout.listview_header_row, null);
         //vMatchingPersons.addHeaderView(header);
        
-        vMatchingPersons.setAdapter(mMatchingPersonAdapter);
+       vMatchingPersons.setAdapter(mMatchingPersonAdapter);
     
+       vMatchingPersons.setOnItemClickListener(new OnItemClickListener() {
+          @Override
+          public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Person selPerson = (Person)parent.getItemAtPosition(position);
+              
+            if (selPerson != null)  {
+              fillSchaetzerWithPersonData(selPerson);
+            }
+          }
+        });
       
+       
+          
       /*
       ArrayList<String> list = new ArrayList<String>();
       list.add("text1");
@@ -121,6 +142,77 @@ public class HelloAndroidActivity extends Activity {
       vSchaetzerList.setAdapter(new ArrayAdapter<String>(this,R.layout.textview_schaetzer_list_item,list));
       */
     }
+  
+   /**
+     * @return
+     */
+    private String getExcelExportDir() {
+      
+      File basepath = Environment.getExternalStorageDirectory();
+      if (basepath == null) {
+        Log.e(TAG, "Path to external storage could not be determined. Missing permission?");
+        return null;
+      }
+      
+      File exportDir = new File(basepath + "/"
+                + "SchaetzItManager", "export");
+        if (!exportDir.exists()) {
+            exportDir.mkdirs();
+        }
+      
+      return exportDir.getAbsolutePath();
+    }
+  
+    private String getExcelImportFileTemplate() {    
+        return "SchaetzItManager_Vorlage%d";
+    }
+  
+  private String getExcelImportDir() {
+      
+      File basepath = Environment.getExternalStorageDirectory();
+      if (basepath == null) {
+        Log.e(TAG, "Path to external storage could not be determined. Missing permission?");
+        return null;
+      }
+      
+      File importDir = new File(basepath + "/"
+                + "SchaetzItManager", "import");
+        if (!importDir.exists()) {
+            importDir.mkdirs();
+        }
+      
+      return importDir.getAbsolutePath();
+    }
+  
+    private String getExcelExportFileTemplate() {    
+        return "SchaetzItManager_Ergebnis%d";
+    }
+  
+  private int getExcelExportStaffelSize() {
+    return 200;
+  }
+  
+  
+  
+    protected void exportSchaetzungenToDefaultExcelFile() {
+       ExportSchaetzungenToExcelFile exporterTask = new ExportSchaetzungenToExcelFile(mMgr, getExcelExportDir(), getExcelExportFileTemplate(), getExcelExportStaffelSize(), getExcelImportDir(), getExcelImportFileTemplate()) {
+          @Override
+          protected void onPostExecute(Boolean status)
+          {
+              if (!status){
+                sendNotification("Excel Datei wurde nicht erstellt!"+"\n" + this.getLastError());
+              }
+          }
+          
+        };
+      
+      exporterTask.execute();
+    }
+
+protected void fillSchaetzerWithPersonData(Person person) {
+     vSchaetzerRef.setTag(person);
+     vSchaetzerRef.setText(person.name + ", " + person.adresse);
+   }
   
    /**
      * @param string
@@ -142,6 +234,7 @@ public class HelloAndroidActivity extends Activity {
               }
           }
 
+          @Override
           protected void onPostExecute(List<Person> result)
           {
               mMatchingPersons.clear();
@@ -231,9 +324,10 @@ public class HelloAndroidActivity extends Activity {
 
         mMgr.addSchaetzer(sRef, schaetzungen, null);
 
-        showToast("Neue Schätzung von: " + sRef);
+        showToast("Neue Schätzung von: " + sRef + " / " + schaetzungen.size() + " Schätzwerte");
         clearForm((ViewGroup)findViewById(R.id.schaetzer));
         
+        exportSchaetzungenToDefaultExcelFile();
         loadLatestSchaetzungen();
       }
       catch(Exception e) {
@@ -246,7 +340,7 @@ public class HelloAndroidActivity extends Activity {
     //final ListView schaetzerList = (ListView)findViewById(R.id.listNeuesteSchaetzungen);
     
     final Activity myActivity = this;
-    int count = mMgr.GetAllSchaetzer().size();
+    int count = mMgr.getAllSchaetzer().size();
     Log.d(myActivity.getClass().getSimpleName(), "reloading latest schaetzungen. Count:" + count);
       
     
@@ -294,11 +388,10 @@ private void showToast(String msg) {
           	schaetzungen.add(Integer.parseInt(text));
           }
       }
-
-      if(view instanceof ViewGroup && (((ViewGroup)view).getChildCount() > 0)) {
-          clearForm((ViewGroup)view);
+      else if (view instanceof ViewGroup) {
+        collectAllSchaetzwerte((ViewGroup)view, schaetzungen);
       }
-	 }
+	 }//foreach group
   }
   
   
@@ -315,6 +408,36 @@ private void showToast(String msg) {
           clearForm((ViewGroup)view);
       }
 	 }
+  }
+  
+  
+  private void sendNotification(String text)  {
+    Context context = this.getApplicationContext();
+    Intent notificationIntent = new Intent(this, HelloAndroidActivity.class);  
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,
+                                      notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+    
+    String title = "SchätzIt Manager";
+
+    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
+      .setSmallIcon(R.drawable.ic_launcher)
+      .setContentTitle(title)
+      .setContentText(text)
+      .setContentIntent(pendingIntent);
+    Notification notification = mBuilder.getNotification();
+    // default phone settings for notifications
+    notification.defaults |= Notification.DEFAULT_VIBRATE;
+    notification.defaults |= Notification.DEFAULT_SOUND;
+
+    // cancel notification after click
+    notification.flags |= Notification.FLAG_AUTO_CANCEL;
+    // show scrolling text on status bar when notification arrives
+    notification.tickerText = title + "\n" + text;
+
+    // notifiy the notification using NotificationManager
+    NotificationManager notificationManager = (NotificationManager) context
+      .getSystemService(Context.NOTIFICATION_SERVICE);
+    notificationManager.notify(0 /*NOTIFICATION_ID*/, notification);
   }
   
 }

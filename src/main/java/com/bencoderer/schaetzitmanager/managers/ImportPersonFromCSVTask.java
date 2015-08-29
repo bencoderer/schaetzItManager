@@ -45,22 +45,30 @@ protected Boolean doInBackground(String... params) {
 
       Log.d(getClass().getName(), file.toString());
 
+      char separator = ';';
+      int iTryCnt = 2;
+  
       try{
-        mgr.clearPersons();
-        CSVReader reader = new CSVReader(new FileReader(file));
-        String [] nextLine;
+        do {
+          mgr.clearPersons();
+          CSVReader reader = new CSVReader(new FileReader(file), separator );
+          String [] nextLine;
 
-        //here I am just displaying the CSV file contents, and you can store your file content into db from while loop...
+          //here I am just displaying the CSV file contents, and you can store your file content into db from while loop...
 
-        while ((nextLine = reader.readNext()) != null) {
+          while ((nextLine = reader.readNext()) != null) {
 
-          // nextLine[] is an array of values from the line
+            // nextLine[] is an array of values from the line
 
-          String name=nextLine[0];
-          String adresse=nextLine[1];
+            String name=nextLine[0].trim();
+            String adresse=nextLine[1].trim();
 
-          mgr.addPerson(name, adresse);
+            mgr.addPerson(name, adresse);
+          }
+          iTryCnt = 0; //success, do not try again
+          separator = ',';
         }
+        while(iTryCnt-- > 0);
 
       } catch (Exception e) {
         Log.e("Error", "Error for importing file: " + e.toString());
@@ -70,6 +78,7 @@ protected Boolean doInBackground(String... params) {
       return true;
   }
 
+  @Override
   protected void onPostExecute(Boolean success)
   {
 
@@ -82,7 +91,7 @@ protected Boolean doInBackground(String... params) {
       {
           Toast.makeText(context, "Import erfolgreich", Toast.LENGTH_LONG).show();
       }else{
-          Toast.makeText(context, "Imort fehlgeschlagen!", Toast.LENGTH_SHORT).show();
+          Toast.makeText(context, "Import fehlgeschlagen!", Toast.LENGTH_SHORT).show();
       }
   }
 

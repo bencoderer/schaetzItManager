@@ -1,2 +1,17 @@
 Keep View when Keyboard gets visible:
 http://stackoverflow.com/questions/4207880/android-how-do-i-prevent-the-soft-keyboard-from-pushing-my-view-up
+
+Notification Bar:
+http://stackoverflow.com/questions/4713345/notification-bar-how-to-write-text-there/22236992#22236992
+
+Settings/Preferences Framework:
+Concept: https://www.google.com/design/spec/patterns/settings.html#settings-usage
+Implementation:http://developer.android.com/guide/topics/ui/settings.html#DefiningPrefs
+
+
+Create folder on external storage:
+http://stackoverflow.com/questions/24781213/how-to-create-a-folder-in-android-external-storage-directory
+
+Excel File API
+Autosize columns
+http://stackoverflow.com/questions/1665391/jxl-cell-formating

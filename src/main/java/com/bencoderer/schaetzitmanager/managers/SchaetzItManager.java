@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.activeandroid.query.Delete;
+import com.activeandroid.query.From;
 import com.activeandroid.query.Select;
 import com.bencoderer.schaetzitmanager.data.Person;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
@@ -17,6 +18,10 @@ public class SchaetzItManager{
   }
   
   public List<Person> getPersonsMatching(String matchingText) {
+    if (matchingText == null || matchingText.length() < 3) {
+      return null;
+    }
+    
     return new Select().from(Person.class)
       .where("Name LIKE ? or Adresse LIKE ?", "%"+matchingText+"%", "%"+matchingText+"%")
       .orderBy("Name")
@@ -57,7 +62,17 @@ public class SchaetzItManager{
     }
   }
   
-  public List<Schaetzer> GetAllSchaetzer() {
-    return new Select().from(Schaetzer.class).orderBy("Indate desc").execute();
+  public List<Schaetzer> getAllSchaetzer() {
+    return getAllSchaetzer(false);
   }
+  
+  public List<Schaetzer> getAllSchaetzer(Boolean forExport) {
+    From list = new Select().from(Schaetzer.class);
+    
+    if (!forExport)
+    	return list.orderBy("Indate desc").execute();
+    
+    return list.orderBy("Indate asc").execute();
+  }
+  
 }
