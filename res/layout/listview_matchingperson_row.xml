@@ -10,13 +10,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        
+        android:textSize="18sp"
         /> 
      <TextView
         android:id="@+id/matchingperson_adresse"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/matchingperson_name"
+        android:text="@string/schaetzer_ref"
+        android:textSize="14sp"
         
         /> 
   <!--

@@ -9,5 +9,5 @@
     <string name="hello_world">Hello world!</string>
     <string name="schaetzer_ref_hint">Name und Adresse des Schätzers</string>
     <string name="schaetzer_ref">Schätzer</string>
-
+    <string name="action_reset_schaetzungen">Schätzungen zurücksetzen</string>
 </resources>

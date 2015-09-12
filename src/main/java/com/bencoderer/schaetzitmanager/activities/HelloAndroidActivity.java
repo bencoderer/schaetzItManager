@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 import com.bencoderer.schaetzitmanager.adapters.MatchingPersonAdapter;
@@ -38,6 +40,7 @@ import com.bencoderer.schaetzitmanager.managers.ImportPersonFromCSVTask;
 import com.bencoderer.schaetzitmanager.managers.SchaetzItManager;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.app.LoaderManager;
@@ -192,10 +195,36 @@ public class HelloAndroidActivity extends Activity {
     return 200;
   }
   
+  protected int exportInterval = 1;
   
-  
-    protected void exportSchaetzungenToDefaultExcelFile() {
-       ExportSchaetzungenToExcelFile exporterTask = new ExportSchaetzungenToExcelFile(mMgr, getExcelExportDir(), getExcelExportFileTemplate(), getExcelExportStaffelSize(), getExcelImportDir(), getExcelImportFileTemplate()) {
+    protected void exportSchaetzungenToDefaultExcelFile(final boolean exportAndClear) {
+      String postfix = "";
+      if (exportAndClear) {
+        postfix = "-preclean";
+      }
+      
+      ExportSchaetzungenToExcelFile exporterTask = new ExportSchaetzungenToExcelFile(mMgr, getExcelExportDir(), getExcelExportFileTemplate() + postfix, getExcelExportStaffelSize(), getExcelImportDir(), getExcelImportFileTemplate()) {
+          @Override
+          protected void onPostExecute(Boolean status)
+          {
+              if (!status){
+                sendNotification("Excel Datei wurde nicht erstellt!"+"\n" + this.getLastError());
+              }
+              else if (exportAndClear) {
+                mMgr.clearSchaetzer();
+                showToast("Sicherung erstellt und Schätzungen gelöscht.");
+              }
+          }
+          
+        };
+      
+      exporterTask.execute();
+      
+      if (!exportAndClear) {
+        postfix = String.format("-V%d", this.exportInterval);
+        this.exportInterval = (this.exportInterval % 5) + 1;
+        
+         ExportSchaetzungenToExcelFile exporterTask2 = new ExportSchaetzungenToExcelFile(mMgr, getExcelExportDir(), getExcelExportFileTemplate() + postfix, getExcelExportStaffelSize(), getExcelImportDir(), getExcelImportFileTemplate()) {
           @Override
           protected void onPostExecute(Boolean status)
           {
@@ -206,7 +235,8 @@ public class HelloAndroidActivity extends Activity {
           
         };
       
-      exporterTask.execute();
+        exporterTask2.execute();
+      }
     }
 
 protected void fillSchaetzerWithPersonData(Person person) {
@@ -258,8 +288,8 @@ protected void fillSchaetzerWithPersonData(Person person) {
            ContextMenuInfo menuInfo) {
        super.onCreateContextMenu(menu, v, menuInfo);
        
-       menu.setHeaderTitle("Context Menu");
-       menu.add(0, v.getId(), 0, "Action 1");
+       //menu.setHeaderTitle("Context Menu");
+       menu.add(0, v.getId(), 0, "Löschen");
        menu.add(0, v.getId(), 0, "Action 2");
    }
 
@@ -278,7 +308,11 @@ protected void fillSchaetzerWithPersonData(Person person) {
         case R.id.action_import_persons:
             importPersons();
             break;
+        case R.id.action_reset_schaetzungen:
+            resetSchaetzungen();
+            break;
         }
+      
         return true;
     }
   
@@ -289,6 +323,44 @@ protected void fillSchaetzerWithPersonData(Person person) {
       super.onStart();
       
       this.loadLatestSchaetzungen();
+  }
+  
+  private class Holder<T> {
+      public T value;
+  }
+  
+  private void resetSchaetzungen() {
+    final Holder<Boolean> doReset = new Holder<Boolean>();
+    doReset.value = false;
+    
+    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which){
+            case DialogInterface.BUTTON_POSITIVE:
+                exportSchaetzungenToDefaultExcelFile(true);
+                break;
+
+            case DialogInterface.BUTTON_NEGATIVE:
+                //No button clicked
+                break;
+            }
+        }
+    };
+
+    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    builder.setMessage("Sollen wirklich alle Schätzungen gelöscht werden?").setPositiveButton("JA", dialogClickListener)
+        .setNegativeButton("Abbrechen", dialogClickListener).show();
+      
+  
+    /*
+    if (doReset.value) {
+      builder.setMessage("Sind Sie sicher?").show();
+      if (doReset.value) {
+        
+      }
+    }
+    */
   }
   
     /**
@@ -326,8 +398,9 @@ protected void fillSchaetzerWithPersonData(Person person) {
 
         showToast("Neue Schätzung von: " + sRef + " / " + schaetzungen.size() + " Schätzwerte");
         clearForm((ViewGroup)findViewById(R.id.schaetzer));
+        nameAndAddr.requestFocus();
         
-        exportSchaetzungenToDefaultExcelFile();
+        exportSchaetzungenToDefaultExcelFile(false);
         loadLatestSchaetzungen();
       }
       catch(Exception e) {
@@ -343,6 +416,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
     int count = mMgr.getAllSchaetzer().size();
     Log.d(myActivity.getClass().getSimpleName(), "reloading latest schaetzungen. Count:" + count);
       
+    //((TextView)findViewById(R.id.anzahl_letzte_schaetzungen)).setText(coun(type[]) collection.toArray(new type[collection.size()]).toString()); //TODO crashes
     
     
     this.getLoaderManager().initLoader(0, null, new LoaderManager.LoaderCallbacks<Cursor>() {

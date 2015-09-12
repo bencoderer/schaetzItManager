@@ -24,11 +24,16 @@
                             <TextView
                               android:layout_width="fill_parent"
                               android:layout_height="wrap_content" android:padding="10dp"
+                              
                               android:text="@string/schaetzer_ref" android:textSize="20sp" />
 
                              <EditText android:id="@+id/schaetzerRef" android:layout_width="match_parent"
                               android:layout_height="wrap_content" android:ems="10"
-                              android:hint="@string/schaetzer_ref_hint">
+                              android:hint="@string/schaetzer_ref_hint"
+                              android:inputType="text"
+                              android:imeOptions="actionNext"
+                              android:nextFocusDown="@+id/schaetzung01"
+                              >
                               <requestFocus />
                              </EditText>
                             
@@ -116,18 +121,32 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/addSchaetzung" />
                             
-                            <TextView
-                                      android:text="@string/letzte_schaetzungen"
-                                      android:layout_width="match_parent"
-                                      android:layout_height="wrap_content"
-                                      />
+                            <LinearLayout 
+                                          android:orientation="horizontal"
+                                          android:layout_width="match_parent"
+                                          android:layout_height="wrap_content"
+                                          >
+                              <TextView
+                                        android:text="@string/letzte_schaetzungen"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        />
+                              <TextView
+                                        android:id="@+id/anzahl_letzte_schaetzungen"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:text="0"
+                                        />
+                            </LinearLayout>
                             <ListView
                                       android:id="@+id/listNeuesteSchaetzungen"
                                       android:layout_width="match_parent"
                                       android:scrollbars="vertical"
                                       android:layout_height="200dip"
-                                      android:background="@drawable/border_ui"
+                                      
                                       >
+                              <!-- android:background="@drawable/border_ui"
+                               --> 
                             </ListView>
                           </LinearLayout>
                           <LinearLayout

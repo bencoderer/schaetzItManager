@@ -22,8 +22,26 @@ public class SchaetzItManager{
       return null;
     }
     
+    String[] parts = matchingText.split(" ");
+    
+    String name1 = "";
+    String name2 = "";
+    String adresse = "";
+    
+    if (parts.length >= 1) {
+      name1 = parts[0];
+    }
+    
+    if (parts.length >= 2) {
+      name2 = parts[1];
+    }
+    
+    if (parts.length >= 3) {
+      adresse = parts[parts.length-1];
+    }
+    
     return new Select().from(Person.class)
-      .where("Name LIKE ? or Adresse LIKE ?", "%"+matchingText+"%", "%"+matchingText+"%")
+      .where("Name LIKE ? and Adresse LIKE ?", "%"+name1+"%"+ (name2 == "" ? "" : name2 + "%"), adresse == "" ?"%": "%"+adresse+"%")
       .orderBy("Name")
       .execute();
   }
@@ -40,7 +58,10 @@ public class SchaetzItManager{
     
     item.save();
   }
-    
+   
+  public void clearSchaetzer() {
+    new Delete().from(Schaetzer.class).execute();
+  }
   
   public void addSchaetzer(String nameUndAdresse, List<Integer> schaetzungen, Person person){
     Schaetzer item = new Schaetzer();
