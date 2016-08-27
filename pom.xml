@@ -12,7 +12,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <platform.version>4.1.1.4</platform.version>
         <android.plugin.version>3.8.2</android.plugin.version>
-        <android.sdk.platform.version>17</android.sdk.platform.version>
+        <android.sdk.platform.version>19</android.sdk.platform.version>
     </properties>
 
     <repositories>
@@ -51,6 +51,12 @@
          <version>2.6.12</version>
       </dependency>
 
+      <!-- https://mvnrepository.com/artifact/com.strongloop/loopback-sdk-android -->
+      <dependency>
+          <groupId>com.strongloop</groupId>
+          <artifactId>loopback-sdk-android</artifactId>
+          <version>1.6.0</version>
+      </dependency>
 
       <!-- POI lib is too big for android projects, DEX limit -->
       <!--

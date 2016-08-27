@@ -10,4 +10,5 @@
     <string name="schaetzer_ref_hint">Name und Adresse des Schätzers</string>
     <string name="schaetzer_ref">Schätzer</string>
     <string name="action_reset_schaetzungen">Schätzungen zurücksetzen</string>
+    <string name="action_choose_operator">Benutzer auswählen</string>
 </resources>

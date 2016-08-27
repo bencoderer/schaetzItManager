@@ -6,6 +6,7 @@ import java.util.List;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.From;
 import com.activeandroid.query.Select;
+import com.bencoderer.schaetzitmanager.data.Operator;
 import com.bencoderer.schaetzitmanager.data.Person;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.data.Schaetzung;
@@ -96,4 +97,40 @@ public class SchaetzItManager{
     return list.orderBy("Indate asc").execute();
   }
   
+  
+  
+  /*
+   * Operator
+  */
+  
+  public void clearOperator() {
+    new Delete().from(Operator.class).execute();
+  }
+  
+  
+  public void addOperator(String operatorKey, String name){
+    Operator item = new Operator();
+
+    item.key = operatorKey;
+    item.name = name;
+    
+    item.indate = new Date();
+    item.save();
+  }
+  
+  public void updateOperator(Operator item){
+    item.save();
+  }
+  
+  public Operator getCurrentOperator() {
+    return new Select().from(Operator.class)
+      .where("Used = 1")
+      .executeSingle();
+  }
+  
+  public List<Operator> getAllOperator() {
+    From list = new Select().from(Operator.class);
+    
+    return list.orderBy("Name asc").execute();
+  }
 }

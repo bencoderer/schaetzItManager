@@ -4,7 +4,28 @@
             android:layout_height="match_parent"
             android:shrinkColumns="*" 
             android:stretchColumns="*">
-
+ 								<TableRow
+                            android:layout_height="wrap_content"
+                            android:layout_width="fill_parent"
+                            android:gravity="center_horizontal">
+                          <LinearLayout
+                                android:id="@+id/status"
+                                android:orientation="horizontal"
+                                android:layout_weight="1"  
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="right"
+                                        >
+                            <TextView
+                              android:id="@+id/operatorName"
+                              android:layout_width="fill_parent"
+                              android:layout_height="wrap_content" android:padding="2dp"
+                              
+                              android:textSize="5sp" />
+                          </LinearLayout>
+  								</TableRow>
+  
+  
                         <!-- Row 1 with 2 columns -->
 
                         <TableRow

@@ -1,7 +1,7 @@
-FROM codenvy/android422
+FROM codenvy/android442
 ADD $app$ /home/user/application.apk
 
-RUN echo no | android create avd -n mytablet -t android-17 --skin WXGA800
+RUN echo no | android create avd -n mytablet -t android-19 --skin WXGA800
 
 RUN echo "[begin] (Blackbox) \n \
       [exec] (Terminal) {urxvt -fn "xft:Terminus:size=12"} \n \

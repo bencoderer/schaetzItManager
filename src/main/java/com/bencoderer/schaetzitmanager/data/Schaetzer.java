@@ -24,6 +24,15 @@ public class Schaetzer extends BaseModel {
     @Column(name = "Person", onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE, notNull = false)
     public Person person;
   
+    public static final String OPERATORKEY_COLUMN = "OperatorKey";
+    @Column(name = OPERATORKEY_COLUMN)
+    public String operatorKey; //add thk 20.08.2016
+  
+  
+    public static final String SENTTOSERVERDATE_COLUMN = "SentToServerDate";
+    @Column(name = SENTTOSERVERDATE_COLUMN)
+    public Date sentToServerDate; //add thk 20.08.2016
+  
     // Make sure to have a default constructor for every ActiveAndroid model
     public Schaetzer(){
       super();

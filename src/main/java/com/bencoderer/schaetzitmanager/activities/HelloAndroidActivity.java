@@ -34,10 +34,14 @@ import android.widget.Toast;
 import com.bencoderer.schaetzitmanager.adapters.MatchingPersonAdapter;
 import com.bencoderer.schaetzitmanager.data.Person;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
+import com.bencoderer.schaetzitmanager.data.Operator;
+import com.bencoderer.schaetzitmanager.dto.OperatorDTO;
 import com.bencoderer.schaetzitmanager.helpers.FileDialog;
+import com.bencoderer.schaetzitmanager.helpers.SimpleCallback;
 import com.bencoderer.schaetzitmanager.managers.ExportSchaetzungenToExcelFile;
 import com.bencoderer.schaetzitmanager.managers.ImportPersonFromCSVTask;
 import com.bencoderer.schaetzitmanager.managers.SchaetzItManager;
+import com.bencoderer.schaetzitmanager.managers.SchaetzItServerManager;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
@@ -48,6 +52,7 @@ import android.app.LoaderManager.LoaderCallbacks;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import com.strongloop.android.loopback.callbacks.ListCallback;
 
 public class HelloAndroidActivity extends Activity {
 
@@ -55,6 +60,10 @@ public class HelloAndroidActivity extends Activity {
     private final int PERSON_LOADER = 2;
   
     private SchaetzItManager mMgr;
+    private Operator currentOperator = null;
+  
+    private SchaetzItServerManager mServerMgr;
+  
     private ListView vSchaetzerList;
     private EditText vSchaetzerRef;
   
@@ -77,7 +86,10 @@ public class HelloAndroidActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
       
+        final Context myContext = getApplicationContext();
+      
         mMgr = new SchaetzItManager();
+        mServerMgr = new SchaetzItServerManager(myContext); 
       
       vSchaetzerList = (ListView)this.findViewById(R.id.listNeuesteSchaetzungen);
       this.registerForContextMenu(vSchaetzerList);
@@ -136,7 +148,7 @@ public class HelloAndroidActivity extends Activity {
           }
         });
       
-       
+       loadCurrentOperator();
           
       /*
       ArrayList<String> list = new ArrayList<String>();
@@ -303,6 +315,8 @@ protected void fillSchaetzerWithPersonData(Person person) {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
+      final Activity myActivity = this;
+      
         switch(item.getItemId()) {
 
         case R.id.action_import_persons:
@@ -310,6 +324,22 @@ protected void fillSchaetzerWithPersonData(Person person) {
             break;
         case R.id.action_reset_schaetzungen:
             resetSchaetzungen();
+            break;
+          
+        case R.id.action_choose_operator:
+            loadOperatorsFromServer(new SimpleCallback() {
+
+              @Override
+              public void onSuccess(Object... objects) {
+                chooseOperator();
+              }
+
+              @Override
+              public void onError(Throwable err) {
+                  Log.i(myActivity.getClass().getSimpleName(), "chooseOperator uebersprungen, da laden vom server fehlschlug.");
+              }
+            }
+      		);
             break;
         }
       
@@ -327,6 +357,83 @@ protected void fillSchaetzerWithPersonData(Person person) {
   
   private class Holder<T> {
       public T value;
+  }
+  
+  private void loadCurrentOperator() {
+    //XloadCurrentOperator
+    this.currentOperator = mMgr.getCurrentOperator();
+    
+    TextView operatorName = (TextView) findViewById(R.id.operatorName);
+    if (this.currentOperator != null) {
+      operatorName.setText(this.currentOperator.toDisplayText());
+    }
+    else {
+      operatorName.setText("<kein Benutzer>");
+    }
+  }
+  
+  
+  private void chooseOperator() {
+    final List<Operator> opList = mMgr.getAllOperator();
+    
+    CharSequence operators[] = new CharSequence[opList.size()];
+
+    for (int i=0; i < opList.size(); i++) {
+      operators[i] = opList.get(i).name;
+    }
+    
+    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    builder.setTitle("Benutzer wählen");
+    builder.setItems(operators, new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            for (int i=0; i < opList.size(); i++) {
+              Operator curOp = opList.get(i);
+              curOp.used = false;
+              
+              if (i == which) { curOp.used = true; };
+              
+              mMgr.updateOperator(curOp);
+            }
+          
+            loadCurrentOperator();
+        }
+    });
+    builder.show();
+  }
+  
+  
+  private void loadOperatorsFromServer(final SimpleCallback callback) {
+    //xLoadOperatorsFromServer
+    
+    mServerMgr.getOperatorsAll(
+      new ListCallback<OperatorDTO>() {
+
+        @Override
+        public void onSuccess(List<OperatorDTO> operatorList) {
+          try {
+            if (operatorList != null) {
+              mMgr.clearOperator(); 
+
+              for(OperatorDTO op : operatorList) {
+                mMgr.addOperator(op.getOperatorKey(), op.getName());
+              }
+              callback.onSuccess();
+            }
+          }
+          catch(Exception e) {
+            showToast("Laden der Benutzer in die lokale Datenbank fehlgeschlagen!!!");
+            Log.e(e.getClass().getName(), "exception", e);
+            callback.onError(e);
+          }  
+        }
+
+        @Override
+        public void onError(Throwable err) {
+          callback.onError(err);
+        }
+      }
+    );
   }
   
   private void resetSchaetzungen() {

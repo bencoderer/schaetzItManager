@@ -1,5 +1,7 @@
 package com.bencoderer.schaetzitmanager.data;
 
+import java.util.Date;
+
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Column.ForeignKeyAction;
 import com.activeandroid.annotation.Table;
@@ -16,10 +18,13 @@ public class Schaetzung extends BaseModel {
     @Column(name = "Schaetzer", onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
     public Schaetzer schaetzer;
   
-    @Column(name = "Schaetzwert", onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
+    @Column(name = "Schaetzwert")
     public int schaetzwert;
   
-    @Column(name = "Sortorder", onUpdate = ForeignKeyAction.CASCADE, onDelete = ForeignKeyAction.CASCADE)
+    @Column(name = "Sortorder")
     public int sortorder;
-
+  
+  
+   
+  
 }
