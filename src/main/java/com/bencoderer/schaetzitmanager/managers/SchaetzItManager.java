@@ -12,8 +12,18 @@ import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.data.Schaetzung;
 
 public class SchaetzItManager{
-  
 
+  private String operatorKey = null;
+
+  public void setOperatorKey(String operatorKey) {
+    this.operatorKey = operatorKey;
+  }
+ 
+  public String getOperatorKey() {
+    return operatorKey;
+  }
+  
+  
   public SchaetzItManager() {
     
   }
@@ -59,6 +69,20 @@ public class SchaetzItManager{
     
     item.save();
   }
+  
+  /*
+   * Schaetzer
+  */
+  
+  private From getSchaetzerOfOperator() {
+    From result = new Select().from(Schaetzer.class);
+    
+    if (this.getOperatorKey() != null) {
+        result = result.where("OperatorKey = ?", this.getOperatorKey());
+    }
+    
+    return result;
+  }
    
   public void clearSchaetzer() {
     new Delete().from(Schaetzer.class).execute();
@@ -70,6 +94,8 @@ public class SchaetzItManager{
     item.person = person;
     item.nameUndAdresse = nameUndAdresse;
     
+    
+    item.operatorKey = this.getOperatorKey();
     item.indate = new Date();
     item.save();
     
@@ -89,7 +115,7 @@ public class SchaetzItManager{
   }
   
   public List<Schaetzer> getAllSchaetzer(Boolean forExport) {
-    From list = new Select().from(Schaetzer.class);
+    From list = getSchaetzerOfOperator();
     
     if (!forExport)
     	return list.orderBy("Indate desc").execute();
@@ -97,6 +123,13 @@ public class SchaetzItManager{
     return list.orderBy("Indate asc").execute();
   }
   
+  
+  public List<Schaetzer> getSchaetzerToSyncToServer() {
+    return getSchaetzerOfOperator()
+          .where("SentToServerDate is NULL")
+          .orderBy("Indate asc")
+          .execute();
+  }
   
   
   /*

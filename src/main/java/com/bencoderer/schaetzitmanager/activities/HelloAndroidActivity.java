@@ -42,6 +42,7 @@ import com.bencoderer.schaetzitmanager.managers.ExportSchaetzungenToExcelFile;
 import com.bencoderer.schaetzitmanager.managers.ImportPersonFromCSVTask;
 import com.bencoderer.schaetzitmanager.managers.SchaetzItManager;
 import com.bencoderer.schaetzitmanager.managers.SchaetzItServerManager;
+import com.bencoderer.schaetzitmanager.managers.SchaetzItSyncManager;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
@@ -63,11 +64,12 @@ public class HelloAndroidActivity extends Activity {
     private Operator currentOperator = null;
   
     private SchaetzItServerManager mServerMgr;
+    private SchaetzItSyncManager mSyncMgr;
   
     private ListView vSchaetzerList;
     private EditText vSchaetzerRef;
   
-    public final String TAG  = "SchaetzItManagerMain";
+    public static final String TAG  = "SchaetzItManagerMain";
     private List<Person> mMatchingPersons;
     private ListView vMatchingPersons;
     private MatchingPersonAdapter mMatchingPersonAdapter;
@@ -88,8 +90,23 @@ public class HelloAndroidActivity extends Activity {
       
         final Context myContext = getApplicationContext();
       
+        final HelloAndroidActivity myActivity = this;
+      
         mMgr = new SchaetzItManager();
         mServerMgr = new SchaetzItServerManager(myContext); 
+      
+        mSyncMgr = new SchaetzItSyncManager(mMgr, new SchaetzItServerManager(myContext), new SimpleCallback() {
+
+              @Override
+              public void onSuccess(Object... objects) {
+                myActivity.sendNotification(objects[0].toString());
+              }
+
+              @Override
+              public void onError(Throwable err) {
+                  Log.e(TAG, err.toString());
+              }
+            }); 
       
       vSchaetzerList = (ListView)this.findViewById(R.id.listNeuesteSchaetzungen);
       this.registerForContextMenu(vSchaetzerList);
@@ -250,6 +267,8 @@ public class HelloAndroidActivity extends Activity {
         exporterTask2.execute();
       }
     }
+  
+  
 
 protected void fillSchaetzerWithPersonData(Person person) {
      vSchaetzerRef.setTag(person);
@@ -366,10 +385,14 @@ protected void fillSchaetzerWithPersonData(Person person) {
     TextView operatorName = (TextView) findViewById(R.id.operatorName);
     if (this.currentOperator != null) {
       operatorName.setText(this.currentOperator.toDisplayText());
+      mMgr.setOperatorKey(this.currentOperator.key);
     }
     else {
       operatorName.setText("<kein Benutzer>");
+      mMgr.setOperatorKey(null);
     }
+    
+    
   }
   
   
@@ -509,6 +532,8 @@ protected void fillSchaetzerWithPersonData(Person person) {
         
         exportSchaetzungenToDefaultExcelFile(false);
         loadLatestSchaetzungen();
+        
+        mSyncMgr.doSyncNow();
       }
       catch(Exception e) {
         showToast("Fehlgeschlagen!!!");

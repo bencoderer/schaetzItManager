@@ -17,3 +17,52 @@ Autosize columns
 http://stackoverflow.com/questions/1665391/jxl-cell-formating
 Tutorial
 http://www.andykhan.com/jexcelapi/tutorial.html
+
+
+
+
+== GSON deserialize==
+Collections Examples
+
+Gson gson = new Gson();
+Collection<Integer> ints = Lists.immutableList(1,2,3,4,5);
+
+// Serialization
+String json = gson.toJson(ints);  // ==> json is [1,2,3,4,5]
+
+// Deserialization
+Type collectionType = new TypeToken<Collection<Integer>>(){}.getType();
+Collection<Integer> ints2 = gson.fromJson(json, collectionType);
+// ==> ints2 is same as ints
+
+Fairly hideous: note how we define the type of collection. Unfortunately, there is no way to get around this in Java.
+Collections Limitations
+
+Gson can serialize collection of arbitrary objects but can not deserialize from it,
+because there is no way for the user to indicate the type of the resulting object.
+Instead, while deserializing, the Collection must be of a specific, generic type.
+
+This makes sense, and is rarely a problem when following good Java coding practices.
+
+
+
+
+=====loopback async======
+
+public void save(final VoidCallback callback) {
+        invokeMethod(id == null ? "create" : "save", toMap(),
+                 new Adapter.JsonObjectCallback() {   //here we create the response handler???
+                 
+
+E/SchaetzItManagerMain(17423): java.lang.IllegalArgumentException: Synchronous ResponseHandler used in AsyncHttpClient. You should create your response handler in a looper thread or use SyncHttpClient instead.
+E/SchaetzItManagerMain(17423):  at com.loopj.android.http.AsyncHttpClient.sendRequest(AsyncHttpClient.java:1165)
+E/SchaetzItManagerMain(17423):  at com.loopj.android.http.AsyncHttpClient.post(AsyncHttpClient.java:986)
+E/SchaetzItManagerMain(17423):  at com.strongloop.android.remoting.adapters.RestAdapter$RestHttpClient.request(RestAdapter.java:482)
+E/SchaetzItManagerMain(17423):  at com.strongloop.android.remoting.adapters.RestAdapter.request(RestAdapter.java:202)
+E/SchaetzItManagerMain(17423):  at com.strongloop.android.remoting.adapters.RestAdapter.invokeInstanceMethod(RestAdapter.java:189)
+E/SchaetzItManagerMain(17423):  at com.strongloop.android.remoting.adapters.RestAdapter.invokeInstanceMethod(RestAdapter.java:150)
+E/SchaetzItManagerMain(17423):  at com.strongloop.android.remoting.VirtualObject.invokeMethod(VirtualObject.java:101)
+E/SchaetzItManagerMain(17423):  at com.strongloop.android.loopback.Model.save(Model.java:101)
+E/SchaetzItManagerMain(17423):  at com.bencoderer.schaetzitmanager.managers.SchaetzItServerManager.sendSchaetzerToServer(SchaetzItServerManager.java:68)
+E/SchaetzItManagerMain(17423):  at com.bencoderer.schaetzitmanager.managers.SyncSchaetzungenWithServerTask.sendSchaetzungenToServer(SyncSchaetzungenWithServerTask.java:66)
+E/SchaetzItManagerMain(17423):  at com.bencoderer.schaetzitmanager.managers.Sync
