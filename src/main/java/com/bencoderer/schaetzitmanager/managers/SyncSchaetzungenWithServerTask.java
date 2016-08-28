@@ -1,14 +1,14 @@
 package com.bencoderer.schaetzitmanager.managers;
 
 import java.util.List;
-
+import java.lang.Runnable;
 import android.os.AsyncTask;
 import android.util.Log;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.data.Schaetzung;
 import com.bencoderer.schaetzitmanager.dto.SchaetzerDTO;
 
-public class SyncSchaetzungenWithServerTask extends AsyncTask<String,String,Boolean> {
+public class SyncSchaetzungenWithServerTask implements Runnable {
 
     public static final String TAG = com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity.TAG;
   
@@ -19,6 +19,15 @@ public class SyncSchaetzungenWithServerTask extends AsyncTask<String,String,Bool
   
     private String lastError;
 
+    private boolean status = false;
+  
+    public void setStatus(boolean status) {
+      this.status = status;
+    }
+
+    public boolean getStatus() {
+      return status;
+    }
     
 
     public SyncSchaetzungenWithServerTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr) {
@@ -28,7 +37,7 @@ public class SyncSchaetzungenWithServerTask extends AsyncTask<String,String,Bool
 
   
     @Override
-    protected Boolean doInBackground(String... arg0) {
+    public void run() {
       Log.d(TAG, "run syncToServer in background");
       
         List<Schaetzer> curSchaetzungen;
@@ -39,7 +48,8 @@ public class SyncSchaetzungenWithServerTask extends AsyncTask<String,String,Bool
           curSchaetzungen = _mgr.getSchaetzerToSyncToServer();
           
           sendSchaetzungenToServer(curSchaetzungen);
-          return true;
+          this.status = true;
+          return;
         }
         catch(Throwable e) {
           Log.e(TAG, "SyncToServer BackgroundError: " + e.getMessage(), e);
@@ -47,7 +57,8 @@ public class SyncSchaetzungenWithServerTask extends AsyncTask<String,String,Bool
           this.lastError = e.getMessage();
         }
           
-        return false;
+        this.status = false;
+        return;
     }
   
     public String getLastError() {

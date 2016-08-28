@@ -1,5 +1,7 @@
 package com.bencoderer.schaetzitmanager.managers;
 
+import java.lang.Runnable;
+
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.dto.SchaetzerDTO;
 import com.bencoderer.schaetzitmanager.helpers.SimpleCallback;
@@ -56,20 +58,24 @@ public class SchaetzItSyncManager {
   
   private void syncSchaetzungenWithServer() {
       final SchaetzItSyncManager myMgr = this;
-      
-      SyncSchaetzungenWithServerTask syncTask = new SyncSchaetzungenWithServerTask(mMgr,mSvrMgr) {
-          @Override
-          protected void onPostExecute(Boolean status)
-          {
-              if (!status){
-                String errMsg = "Fehler beim Sync mit dem Server!"+"\n" + this.getLastError();
+    
+    
+    
+      final SyncSchaetzungenWithServerTask syncTask = new SyncSchaetzungenWithServerTask(mMgr,mSvrMgr);
+    
+      mHandler.post(syncTask);
+    
+      Runnable afterSyncTask = new Runnable() {
+            @Override  
+            public void run() {
+                 if (!syncTask.getStatus()){
+                String errMsg = "Fehler beim Sync mit dem Server!"+"\n" + syncTask.getLastError();
                 Log.d(TAG, errMsg);
                 myMgr.onNotification.onSuccess(errMsg);
               }
-          }
-          
-        };
-      
-      syncTask.execute();
+            } //run is executed after syncTask has finished
+        }; 
+		
+      mHandler.post(afterSyncTask);
     }
 }
