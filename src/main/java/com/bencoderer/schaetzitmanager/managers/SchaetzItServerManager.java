@@ -26,6 +26,7 @@ public class SchaetzItServerManager {
   
   private AtomicInteger sentToServerSuccess = new AtomicInteger(0);
   private AtomicInteger sentToServerFailed = new AtomicInteger(0);
+
   
   public SchaetzItServerManager(Context context) {
     this.context = context;
