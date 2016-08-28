@@ -537,7 +537,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
       }
       catch(Exception e) {
         showToast("Fehlgeschlagen!!!");
-        Log.e(e.getClass().getName(), "exception", e);
+        Log.e(TAG, "exception in addSchaetzung", e);
       }
 	}
 

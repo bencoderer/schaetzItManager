@@ -2,6 +2,9 @@ package com.bencoderer.schaetzitmanager.dto;
 
 import com.strongloop.android.loopback.Model;
 import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
  
 /**
  * 
@@ -14,7 +17,7 @@ public class SchaetzerDTO extends Model {
   
   private String idInOperatorDb;
   
-  private Date indate;
+  private String indate;
   
   private String schaetzungenJSON;
   
@@ -26,6 +29,7 @@ public class SchaetzerDTO extends Model {
   public String getId() {
     return id;
   }
+  
   
 
   public void setOperatorKey(String operatorKey) {
@@ -55,13 +59,27 @@ public class SchaetzerDTO extends Model {
     return idInOperatorDb;
   }
   
-  
-  public void setIndate(Date indate) {
+  public void setIndate(String indate) {
     this.indate = indate;
   }
  
-  public Date getIndate() {
-    return indate;
+  
+  public void setIndate(Date indate) {
+    //TimeZone tz = TimeZone.getTimeZone("UTC");
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+    //df.setTimeZone(tz);
+    this.indate = df.format(indate);
+  }
+ 
+  public Date getIndateDate() {
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+    try
+    {
+    	return df.parse(this.indate);
+    }
+    catch(ParseException ex) {
+      return null;
+    }
   }
   
   

@@ -72,7 +72,7 @@ public class SyncSchaetzungenWithServerTask implements Runnable {
       
       SchaetzerDTO schaetzerDTO;
       for(Schaetzer schaetzer : schaetzerList)  {
-        schaetzerDTO = SchaetzItSyncManager.convertSchaetzerToSchaetzerDTO(schaetzer, _mgrSvr.createSchaetzerDTO());
+        schaetzerDTO = SchaetzItSyncManager.convertSchaetzerToSchaetzerDTO(schaetzer, _mgrSvr.createSchaetzerDTO(SchaetzItSyncManager.getServerId(schaetzer)));
         
         _mgrSvr.sendSchaetzerToServer(schaetzerDTO);
       }

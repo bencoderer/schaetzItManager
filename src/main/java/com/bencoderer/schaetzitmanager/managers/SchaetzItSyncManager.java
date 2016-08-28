@@ -28,6 +28,8 @@ public class SchaetzItSyncManager {
     this.mMgr = mgr;
     this.mSvrMgr = svrMgr;
     this.onNotification = onNotification;
+    
+    this.createHandlerThread();
   }
   
   public static SchaetzerDTO convertSchaetzerToSchaetzerDTO(Schaetzer source, SchaetzerDTO result) {
@@ -40,6 +42,10 @@ public class SchaetzItSyncManager {
     Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
     result.setSchaetzungenJSON(gson.toJson(source.schaetzungen()));
     return result;
+  }
+  
+  public static String getServerId(Schaetzer source) {
+    return source.operatorKey + "_" + source.getId();
   }
   
   public void createHandlerThread() {

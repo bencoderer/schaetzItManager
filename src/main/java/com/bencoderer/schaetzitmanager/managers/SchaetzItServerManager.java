@@ -57,8 +57,13 @@ public class SchaetzItServerManager {
     });
   }
   
-  public SchaetzerDTO createSchaetzerDTO() {
-    return schaetzerRepo.createObject(new HashMap<String, String>());
+  public SchaetzerDTO createSchaetzerDTO(String id) {
+    HashMap<String, String> init = new HashMap<String, String>();
+      
+    if (id != null){
+      init.put("id",id);
+    }
+    return schaetzerRepo.createObject(init);
   }
   
   public void sendSchaetzerToServer(final SchaetzerDTO schaetzer) {
@@ -76,7 +81,16 @@ public class SchaetzItServerManager {
 
         @Override
         public void onError(Throwable arg0) {
-            Log.e(TAG, "sendSchaetzerToServer error for:" + schaetzer.getId() + " " + arg0);
+            String details = "";
+          
+            if(arg0 instanceof org.apache.http.client.HttpResponseException){
+              Throwable cause = ((org.apache.http.client.HttpResponseException) arg0 ).getCause();
+              if (cause != null) {
+             		details = cause.toString();
+              }
+            }
+          
+            Log.e(TAG, "sendSchaetzerToServer error for:" + schaetzer.getId() + " " + arg0 + " Details:" +details, arg0);
             myMgr.sentToServerFailed.incrementAndGet();
         }
     });
