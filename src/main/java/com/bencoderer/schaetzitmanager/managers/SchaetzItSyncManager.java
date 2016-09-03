@@ -1,12 +1,18 @@
 package com.bencoderer.schaetzitmanager.managers;
 
 import java.lang.Runnable;
+import java.lang.reflect.Type;
+import java.util.List;
 
+import com.bencoderer.schaetzitmanager.data.Operator;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
+import com.bencoderer.schaetzitmanager.data.Schaetzung;
+import com.bencoderer.schaetzitmanager.dto.OperatorDTO;
 import com.bencoderer.schaetzitmanager.dto.SchaetzerDTO;
 import com.bencoderer.schaetzitmanager.helpers.SimpleCallback;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import android.util.Log;
 import android.os.Handler;
 import android.os.HandlerThread; 
@@ -45,6 +51,22 @@ public class SchaetzItSyncManager {
     
     Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
     result.setSchaetzungenJSON(gson.toJson(source.schaetzungen()));
+    return result;
+  }
+  
+  public static List<Schaetzung> convertSchaetzerDTOToSchaetzungen(SchaetzerDTO source) {
+    
+    Type listType = new TypeToken<List<Schaetzung>>(){}.getType();
+    Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+    return gson.fromJson(source.getSchaetzungenJSON(), listType);
+  }
+  
+  public static OperatorDTO convertOperatorToOperatorDTO(Operator op) {
+    if (op == null) return null;
+    
+    OperatorDTO result = new OperatorDTO();
+    result.setName(op.name);
+    result.setOperatorKey(op.key);
     return result;
   }
   
@@ -87,5 +109,24 @@ public class SchaetzItSyncManager {
         }; 
 		
       mHandler.post(afterSyncTask);
+    
+    
+     final DownloadSchaetzungenFromServerTask downloadTask = new DownloadSchaetzungenFromServerTask(mMgr,mSvrMgr);
+    
+      mHandler.post(downloadTask);
+    
+      Runnable afterDownloadTask = new Runnable() {
+            @Override  
+            public void run() {
+                 if (!downloadTask.getStatus()){
+                String errMsg = "Fehler beim Download vom Server!"+"\n" + downloadTask.getLastError();
+                Log.d(TAG, errMsg);
+                myMgr.onNotification.onSuccess(errMsg);
+              }
+            } //run is executed after downloadTask has finished
+        }; 
+		
+      mHandler.post(afterDownloadTask);
+      
     }
 }

@@ -384,7 +384,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
     
     ArrayList<OperatorDTO> opList = new ArrayList<OperatorDTO>();
     for(Operator op : this.mMgr.getAllOperator()) {
-      opList.add(SchaetzItManager.getAsOperatorDTO(op));
+      opList.add(SchaetzItSyncManager.convertOperatorToOperatorDTO(op));
     }
     
     this.mSyncMgr.getServerManager().setOperatorListForSync(opList);

@@ -3,7 +3,6 @@ package com.bencoderer.schaetzitmanager.managers;
 import java.util.Date;
 import java.util.List;
 import java.lang.Runnable;
-import android.os.AsyncTask;
 import android.util.Log;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.data.Schaetzung;

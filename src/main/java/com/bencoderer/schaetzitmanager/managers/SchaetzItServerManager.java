@@ -77,6 +77,45 @@ public class SchaetzItServerManager {
     });
   }
   
+  
+  public void getNotSyncedSchaetzer(OperatorDTO operator, final ListCallback<SchaetzerDTO> callback) {
+    this.schaetzerRepo.getNotSyncedTo(operator,
+                                      
+      new ListCallback<SchaetzerDTO>() {
+
+        @Override
+        public void onSuccess(List<SchaetzerDTO> arg0) {
+            Log.d(TAG, "getNotSyncedSchaetzer success:  " + arg0.size());
+            callback.onSuccess(arg0);
+        }
+
+        @Override
+        public void onError(Throwable arg0) {
+            Log.e(TAG, "getNotSyncedSchaetzer error: " + arg0);
+            callback.onError(arg0);
+        }
+    });
+  }
+  
+  public void setSchaetzerAsSyncedTo(SchaetzerDTO schaetzer, OperatorDTO operator, final SimpleCallback callback) {
+     this.schaetzerRepo.setIsSynced(schaetzer,operator,
+                                      
+      new SimpleCallback() {
+
+        @Override
+        public void onSuccess(Object... objects) {
+            Log.d(TAG, "setSchaetzerAsSyncedTo success:  " + objects.length);
+            callback.onSuccess(objects);
+        }
+
+        @Override
+        public void onError(Throwable arg0) {
+            Log.e(TAG, "setSchaetzerAsSyncedTo error: " + arg0);
+            callback.onError(arg0);
+        }
+    });
+  }
+  
   public SchaetzerDTO createSchaetzerDTO(String id) {
     HashMap<String, String> init = new HashMap<String, String>();
       

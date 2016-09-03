@@ -70,6 +70,10 @@ public class SchaetzerDTO extends Model {
     //df.setTimeZone(tz);
     this.indate = df.format(indate);
   }
+  
+  public String getIndate() {
+    return this.indate;
+  }
  
   public Date getIndateDate() {
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");

@@ -65,6 +65,11 @@ public class SyncSchaetzerToOperatorDTO extends Model {
   
   public Date getSentToOperatorDateAsDate() {
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+    
+    if (this.sentToOperatorDate == null){
+      return null;
+    }
+    
     try
     {
     	return df.parse(this.sentToOperatorDate);

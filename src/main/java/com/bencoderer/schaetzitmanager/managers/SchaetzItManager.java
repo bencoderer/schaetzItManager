@@ -3,6 +3,7 @@ package com.bencoderer.schaetzitmanager.managers;
 import java.util.Date;
 import java.util.List;
 
+import android.util.Log;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.From;
 import com.activeandroid.query.Select;
@@ -10,10 +11,12 @@ import com.bencoderer.schaetzitmanager.data.Operator;
 import com.bencoderer.schaetzitmanager.data.Person;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.data.Schaetzung;
-import com.bencoderer.schaetzitmanager.dto.OperatorDTO;
+
 
 public class SchaetzItManager{
 
+  public static final String TAG = com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity.TAG;
+  
   private String operatorKey = null;
 
   public void setOperatorKey(String operatorKey) {
@@ -89,7 +92,7 @@ public class SchaetzItManager{
     new Delete().from(Schaetzer.class).execute();
   }
   
-  public void addSchaetzer(String nameUndAdresse, List<Integer> schaetzungen, Person person){
+  public Schaetzer addSchaetzer(String nameUndAdresse, List<Integer> schaetzungen, Person person){
     Schaetzer item = new Schaetzer();
 
     item.person = person;
@@ -99,20 +102,61 @@ public class SchaetzItManager{
     item.operatorKey = this.getOperatorKey();
     item.indate = new Date();
     item.save();
+    item.operatorDbId = item.getId().toString();
+    item.save();
     
     Schaetzung newS;
     int sortOrder = 1;
-    for(Integer s : schaetzungen) {
-      newS = new Schaetzung();
-      newS.schaetzwert = s;
-      newS.sortorder = sortOrder++;
-      newS.schaetzer = item;
-      newS.save();
+    if (schaetzungen != null) {
+      for(Integer s : schaetzungen) {
+        newS = new Schaetzung();
+        newS.schaetzwert = s;
+        newS.sortorder = sortOrder++;
+        newS.schaetzer = item;
+        newS.save();
+      }
     }
+    
+    return item;
+  }
+  
+  public void addOrUpdateSchaetzerByOperator(String operatorKey, String operatorDbId, String nameUndAdresse, List<Schaetzung> schaetzungen, Person person){
+    Schaetzer existing = getSchaetzerByOperator(operatorKey, operatorDbId);
+    
+    if (existing != null) {
+      deleteSchaetzungenOfSchaetzer(existing);
+    }
+    else {
+      Log.i(TAG, "Neuer Schaetzer vom Operator " + operatorKey + "/" + operatorDbId + "  name:" + nameUndAdresse);
+      existing = addSchaetzer(nameUndAdresse, null, null);
+      existing.operatorKey = operatorKey;
+      existing.operatorDbId = operatorDbId;
+      existing.save(); //store operatorKey changes
+    }
+    
+    
+    for(Schaetzung s : schaetzungen) {
+      s.schaetzer = existing;
+      s.save();
+    }
+    
   }
   
   
-  public void updateSchaetzer(Schaetzer item){
+  /**
+ * @param schaetzer
+ */
+public void deleteSchaetzungenOfSchaetzer(Schaetzer schaetzer) {
+    for(Schaetzung s : schaetzer.schaetzungen()) {
+      s.delete();
+    }
+}
+  
+  public Schaetzung createSchaetzung() {
+    return new Schaetzung();
+  }
+
+public void updateSchaetzer(Schaetzer item){
     item.save();
   }
   
@@ -126,6 +170,7 @@ public class SchaetzItManager{
     if (!forExport)
     	return list.orderBy("Indate desc").execute();
     
+    list = new Select().from(Schaetzer.class);
     return list.orderBy("Indate asc").execute();
   }
   
@@ -135,6 +180,13 @@ public class SchaetzItManager{
           .where("SentToServerDate is NULL")
           .orderBy("Indate asc")
           .execute();
+  }
+  
+  public Schaetzer getSchaetzerByOperator(String operatorKey, String operatorDbId) {
+    return (new Select().from(Schaetzer.class))
+          .where("operatorKey = ?", operatorKey)
+          .where("operatorDbId = ?", operatorDbId)
+          .executeSingle();
   }
   
   
@@ -174,10 +226,5 @@ public class SchaetzItManager{
     return list.orderBy("Name asc").execute();
   }
   
-  public static OperatorDTO getAsOperatorDTO(Operator op) {
-    OperatorDTO result = new OperatorDTO();
-    result.setName(op.name);
-    result.setOperatorKey(op.key);
-    return result;
-  }
+  
 }
