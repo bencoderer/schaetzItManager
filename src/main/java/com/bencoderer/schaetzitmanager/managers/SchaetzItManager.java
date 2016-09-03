@@ -10,6 +10,7 @@ import com.bencoderer.schaetzitmanager.data.Operator;
 import com.bencoderer.schaetzitmanager.data.Person;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.data.Schaetzung;
+import com.bencoderer.schaetzitmanager.dto.OperatorDTO;
 
 public class SchaetzItManager{
 
@@ -110,6 +111,11 @@ public class SchaetzItManager{
     }
   }
   
+  
+  public void updateSchaetzer(Schaetzer item){
+    item.save();
+  }
+  
   public List<Schaetzer> getAllSchaetzer() {
     return getAllSchaetzer(false);
   }
@@ -151,6 +157,7 @@ public class SchaetzItManager{
     item.save();
   }
   
+  
   public void updateOperator(Operator item){
     item.save();
   }
@@ -165,5 +172,12 @@ public class SchaetzItManager{
     From list = new Select().from(Operator.class);
     
     return list.orderBy("Name asc").execute();
+  }
+  
+  public static OperatorDTO getAsOperatorDTO(Operator op) {
+    OperatorDTO result = new OperatorDTO();
+    result.setName(op.name);
+    result.setOperatorKey(op.key);
+    return result;
   }
 }

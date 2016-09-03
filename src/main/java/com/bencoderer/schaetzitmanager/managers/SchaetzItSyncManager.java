@@ -32,6 +32,10 @@ public class SchaetzItSyncManager {
     this.createHandlerThread();
   }
   
+  public SchaetzItServerManager getServerManager() {
+    return this.mSvrMgr;
+  }
+  
   public static SchaetzerDTO convertSchaetzerToSchaetzerDTO(Schaetzer source, SchaetzerDTO result) {
     result.setId(source.operatorKey + "_" + source.getId());
     result.setOperatorKey(source.operatorKey);

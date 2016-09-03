@@ -1,12 +1,17 @@
 package com.bencoderer.schaetzitmanager.dto;
 
+import java.util.HashMap;
+
+import com.bencoderer.schaetzitmanager.dto.SyncSchaetzerToOperatorDTO;
 import com.strongloop.android.loopback.ModelRepository;
+import com.strongloop.android.loopback.callbacks.VoidCallback;
+import com.strongloop.android.remoting.adapters.Adapter;
 import com.strongloop.android.remoting.adapters.RestContract;
 import com.strongloop.android.remoting.adapters.RestContractItem;
 
 public class SyncSchaetzerToOperatorDTORepository extends ModelRepository<SyncSchaetzerToOperatorDTO> {
     public SyncSchaetzerToOperatorDTORepository() {
-        super("Sync", SyncSchaetzerToOperatorDTO.class);
+        super("SyncSchaetzerToOperator", SyncSchaetzerToOperatorDTO.class);
     }
   
     @Override
@@ -15,7 +20,7 @@ public class SyncSchaetzerToOperatorDTORepository extends ModelRepository<SyncSc
 
         String className = getClassName();
 
-        contract.addItem(new RestContractItem("/schaetzers/:schaetzerId/sync/clear", "POST"),
+        contract.addItem(new RestContractItem("/schaetzers/:schaetzerId/sync", "DELETE"),
                 className + ".clearAllOfSchaetzer");
       
         contract.addItem(new RestContractItem("/schaetzers/:schaetzerId/sync", "POST"),
@@ -28,6 +33,48 @@ public class SyncSchaetzerToOperatorDTORepository extends ModelRepository<SyncSc
       
         return contract;
 	}
+  
+  
+  public void clearSyncOfSchaetzer(SchaetzerDTO schaetzer, final VoidCallback callback) {
+        SyncSchaetzerToOperatorDTO helper = this.createObject(new HashMap<String,String>());
+        helper.setSchaetzer(schaetzer);
+    
+        this.invokeStaticMethod("clearAllOfSchaetzer", helper.toMap(),
+                new Adapter.Callback() {
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+
+          
+            @Override
+            public void onSuccess(String arg0) {
+                callback.onSuccess();
+                
+            }
+        });
+    }
+  
+
+  public void addToSchaetzer(SyncSchaetzerToOperatorDTO sync, final VoidCallback callback) {
+
+        this.invokeStaticMethod("addToSchaetzer", sync.toMap(),
+                new Adapter.Callback() {
+
+            @Override
+            public void onError(Throwable t) {
+                callback.onError(t);
+            }
+
+          
+            @Override
+            public void onSuccess(String arg0) {
+                callback.onSuccess();
+                
+            }
+        });
+    }
   
   
   /*

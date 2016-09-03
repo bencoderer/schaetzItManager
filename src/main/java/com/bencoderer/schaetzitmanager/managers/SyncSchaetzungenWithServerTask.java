@@ -1,5 +1,6 @@
 package com.bencoderer.schaetzitmanager.managers;
 
+import java.util.Date;
 import java.util.List;
 import java.lang.Runnable;
 import android.os.AsyncTask;
@@ -7,6 +8,7 @@ import android.util.Log;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.data.Schaetzung;
 import com.bencoderer.schaetzitmanager.dto.SchaetzerDTO;
+import com.bencoderer.schaetzitmanager.helpers.SimpleCallback;
 
 public class SyncSchaetzungenWithServerTask implements Runnable {
 
@@ -72,9 +74,22 @@ public class SyncSchaetzungenWithServerTask implements Runnable {
       
       SchaetzerDTO schaetzerDTO;
       for(Schaetzer schaetzer : schaetzerList)  {
-        schaetzerDTO = SchaetzItSyncManager.convertSchaetzerToSchaetzerDTO(schaetzer, _mgrSvr.createSchaetzerDTO(SchaetzItSyncManager.getServerId(schaetzer)));
+        final Schaetzer curSchaetzer = schaetzer;
+        schaetzerDTO = SchaetzItSyncManager.convertSchaetzerToSchaetzerDTO(curSchaetzer, _mgrSvr.createSchaetzerDTO(SchaetzItSyncManager.getServerId(curSchaetzer)));
         
-        _mgrSvr.sendSchaetzerToServer(schaetzerDTO);
+        _mgrSvr.sendSchaetzerToServer(schaetzerDTO, new SimpleCallback() {
+
+              @Override
+              public void onSuccess(Object... objects) {
+                curSchaetzer.sentToServerDate = new Date();
+                _mgr.updateSchaetzer(curSchaetzer);
+              }
+
+              @Override
+              public void onError(Throwable err) {
+                  Log.e(TAG, err.toString());
+              }
+            });
       }
     }
 }

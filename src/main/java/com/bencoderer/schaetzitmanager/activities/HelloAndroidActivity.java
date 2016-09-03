@@ -379,8 +379,16 @@ protected void fillSchaetzerWithPersonData(Person person) {
   }
   
   private void loadCurrentOperator() {
-    //XloadCurrentOperator
+    //yXloadCurrentOperator
     this.currentOperator = mMgr.getCurrentOperator();
+    
+    ArrayList<OperatorDTO> opList = new ArrayList<OperatorDTO>();
+    for(Operator op : this.mMgr.getAllOperator()) {
+      opList.add(SchaetzItManager.getAsOperatorDTO(op));
+    }
+    
+    this.mSyncMgr.getServerManager().setOperatorListForSync(opList);
+    
     
     TextView operatorName = (TextView) findViewById(R.id.operatorName);
     if (this.currentOperator != null) {
