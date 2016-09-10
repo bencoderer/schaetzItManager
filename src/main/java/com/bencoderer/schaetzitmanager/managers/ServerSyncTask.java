@@ -1,5 +1,6 @@
 package com.bencoderer.schaetzitmanager.managers;
 
+import rx.subjects.ReplaySubject;
 
 public class ServerSyncTask {
   
@@ -7,14 +8,16 @@ public class ServerSyncTask {
   
     protected SchaetzItServerManager _mgrSvr;
     
+    protected ReplaySubject<Integer> _syncDone;
   
     protected String lastError;
 
     protected boolean status = false;
   
-    public ServerSyncTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr) {
+    public ServerSyncTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr, ReplaySubject<Integer> syncDone) {
       _mgr = mgr;
       _mgrSvr = mgrSvr;
+      _syncDone = syncDone;
     }
   
     public void setStatus(boolean status) {

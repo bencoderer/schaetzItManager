@@ -1,5 +1,8 @@
 package com.bencoderer.schaetzitmanager.managers;
 
+import rx.subjects.ReplaySubject;
+import rx.Observable;
+
 import java.util.Date;
 import java.util.List;
 import java.lang.Runnable;
@@ -9,31 +12,14 @@ import com.bencoderer.schaetzitmanager.data.Schaetzung;
 import com.bencoderer.schaetzitmanager.dto.SchaetzerDTO;
 import com.bencoderer.schaetzitmanager.helpers.SimpleCallback;
 
-public class SyncSchaetzungenWithServerTask implements Runnable {
+public class SyncSchaetzungenWithServerTask extends ServerSyncTask implements Runnable {
 
     public static final String TAG = com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity.TAG;
   
-    private SchaetzItManager _mgr;
-  
-    private SchaetzItServerManager _mgrSvr;
-    
-  
-    private String lastError;
-
-    private boolean status = false;
-  
-    public void setStatus(boolean status) {
-      this.status = status;
-    }
-
-    public boolean getStatus() {
-      return status;
-    }
     
 
-    public SyncSchaetzungenWithServerTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr) {
-      _mgr = mgr;
-      _mgrSvr = mgrSvr;
+    public SyncSchaetzungenWithServerTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr, ReplaySubject<Integer> syncDone) {
+       super(mgr, mgrSvr,syncDone);
     }
 
   
@@ -62,12 +48,7 @@ public class SyncSchaetzungenWithServerTask implements Runnable {
         return;
     }
   
-    public String getLastError() {
-      return this.lastError;
-    }
-  
-    
-  
+ 
     public void sendSchaetzungenToServer(List<Schaetzer> schaetzerList) {
       Log.i(TAG, "send schaetzerList with entries:" + schaetzerList.size());
       

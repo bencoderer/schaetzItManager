@@ -6,6 +6,10 @@ import com.bencoderer.schaetzitmanager.R;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+  
+import rx.subjects.PublishSubject;
+import rx.functions.Action1;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -73,7 +77,9 @@ public class HelloAndroidActivity extends Activity {
     private List<Person> mMatchingPersons;
     private ListView vMatchingPersons;
     private MatchingPersonAdapter mMatchingPersonAdapter;
-    
+
+  
+    private PublishSubject<Integer> writeExcelFileSubject = PublishSubject.create();
 
     /**
      * Called when the activity is first created.
@@ -92,11 +98,33 @@ public class HelloAndroidActivity extends Activity {
       
         final HelloAndroidActivity myActivity = this;
       
+        writeExcelFileSubject
+          .debounce(5, TimeUnit.SECONDS)
+          .subscribe(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer aLong) {
+                      try
+                        {
+                        exportSchaetzungenToDefaultExcelFile(false);
+                      }
+                      catch(Exception ex) {
+                        Log.e(TAG, "Schreiben der Excel-Datei:"+  ex);
+                      }
+                    }
+                },new Action1<Throwable>() {
+
+                  public void call(Throwable t1) {
+                      t1.printStackTrace();
+                  }
+              });
+      
         mMgr = new SchaetzItManager();
         mServerMgr = new SchaetzItServerManager(myContext); 
       
         mSyncMgr = new SchaetzItSyncManager(mMgr, new SchaetzItServerManager(myContext), new SimpleCallback() {
 
+              /*onNOTIFICATION*/
+          
               @Override
               public void onSuccess(Object... objects) {
                 myActivity.sendNotification(objects[0].toString());
@@ -106,7 +134,26 @@ public class HelloAndroidActivity extends Activity {
               public void onError(Throwable err) {
                   Log.e(TAG, err.toString());
               }
-            }); 
+            },
+            new SimpleCallback() {
+
+              /*onDownloadDone*/
+          
+              @Override
+              public void onSuccess(Object... objects) {
+                int syncedCount = (Integer)objects[0];
+                if (syncedCount > 0) {
+                  writeExcelFileSubject.onNext(0);
+                }
+              }
+
+              @Override
+              public void onError(Throwable err) {
+                  Log.e(TAG, err.toString());
+                  myActivity.sendNotification(err.getMessage());
+              }
+            }                               
+            ); 
       
       vSchaetzerList = (ListView)this.findViewById(R.id.listNeuesteSchaetzungen);
       this.registerForContextMenu(vSchaetzerList);
@@ -538,7 +585,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
         clearForm((ViewGroup)findViewById(R.id.schaetzer));
         nameAndAddr.requestFocus();
         
-        exportSchaetzungenToDefaultExcelFile(false);
+        writeExcelFileSubject.onNext(1);
         loadLatestSchaetzungen();
         
         mSyncMgr.doSyncNow();

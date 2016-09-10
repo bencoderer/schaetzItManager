@@ -1,5 +1,8 @@
 package com.bencoderer.schaetzitmanager.managers;
 
+import rx.Observable;
+import rx.subjects.ReplaySubject;
+
 import java.util.Date;
 import java.util.List;
 import java.lang.Runnable;
@@ -15,8 +18,8 @@ public class DownloadSchaetzungenFromServerTask extends ServerSyncTask implement
     public static final String TAG = com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity.TAG;
    
 
-    public DownloadSchaetzungenFromServerTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr) {
-      super(mgr, mgrSvr);
+    public DownloadSchaetzungenFromServerTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr, ReplaySubject<Integer> syncDone) {
+      super(mgr, mgrSvr,syncDone);
     }
 
   
@@ -43,6 +46,8 @@ public class DownloadSchaetzungenFromServerTask extends ServerSyncTask implement
                 
                 @Override
                 public void onError(Throwable err) {
+                    status = false;
+                    lastError = err.getMessage();
                     Log.e(TAG, err.toString());
                 }
 
@@ -60,17 +65,14 @@ public class DownloadSchaetzungenFromServerTask extends ServerSyncTask implement
         this.status = false;
         return;
     }
-  
-    public String getLastError() {
-      return this.lastError;
-    }
-  
     
   
     public void updateSchaetzerFromSchaetzerDTO(List<SchaetzerDTO> schaetzerList) {
-      Log.i(TAG, "update from schaetzerList with entries:" + schaetzerList.size());
+      int downloadedSchaetzer = schaetzerList.size();
+      Log.i(TAG, "update from schaetzerList with entries:" + downloadedSchaetzer);
       
       OperatorDTO curOperator = SchaetzItSyncManager.convertOperatorToOperatorDTO(_mgr.getCurrentOperator());
+      
       
       for(SchaetzerDTO schaetzer : schaetzerList)  {
         final SchaetzerDTO curSchaetzer = schaetzer;
@@ -87,10 +89,16 @@ public class DownloadSchaetzungenFromServerTask extends ServerSyncTask implement
 
               @Override
               public void onError(Throwable err) {
+                  status = false;
+                  lastError = err.getMessage();
                   Log.e(TAG, err.toString());
               }
         });
       }
+      
+      Log.i(TAG, "melde syncDone Anzahl Schaetzer:" + downloadedSchaetzer);
+      this._syncDone.onNext(downloadedSchaetzer);
+      this._syncDone.onCompleted();
       
     }
 }

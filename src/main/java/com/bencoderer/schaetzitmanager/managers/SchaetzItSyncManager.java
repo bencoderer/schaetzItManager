@@ -3,7 +3,7 @@ package com.bencoderer.schaetzitmanager.managers;
 import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
-import rx.subjects.PublishSubject;
+import rx.subjects.ReplaySubject;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
@@ -33,26 +33,27 @@ public class SchaetzItSyncManager {
   private SchaetzItServerManager mSvrMgr;
   private SimpleCallback onNotification;
   
-   private SimpleCallback onSyncDoneCallback;
-   private PublishSubject  syncToServerSubject = new ();
+  private SimpleCallback onDownloadDoneCallback;
+  private ReplaySubject<Integer> syncToServerSubject;
   
   //https://medium.com/@ali.muzaffar/handlerthreads-and-why-you-should-be-using-them-in-your-android-apps-dc8bf1540341#.rmy4l6k9x
   //https://blog.nikitaog.me/2014/10/18/android-looper-handler-handlerthread-ii/
   private HandlerThread mHandlerThread = null;
   private Handler mHandler;
   
-  public SchaetzItSyncManager(SchaetzItManager mgr, SchaetzItServerManager svrMgr, SimpleCallback onNotification, SimpleCallback onSyncDoneCallback) {
+  public SchaetzItSyncManager(SchaetzItManager mgr, SchaetzItServerManager svrMgr, SimpleCallback onNotification, SimpleCallback onDownloadDoneCallback) {
     this.mMgr = mgr;
     this.mSvrMgr = svrMgr;
     this.onNotification = onNotification;
-    this.onSyncDoneCallback = onSyncDoneCallback;
+    this.onDownloadDoneCallback = onDownloadDoneCallback;
     
-    this.syncToServerSubject = new PublishSubject();
-    this.syncFromServerSubject = new PublishSubject();
+    this.syncToServerSubject = ReplaySubject.create();
+    
     
     this.createHandlerThread();
     
     this.createTimer();
+  
   }
   
   public SchaetzItServerManager getServerManager() {
@@ -127,9 +128,10 @@ public class SchaetzItSyncManager {
   private void syncSchaetzungenWithServer() {
       final SchaetzItSyncManager myMgr = this;
     
+      
+      
+      final SyncSchaetzungenWithServerTask syncTask = new SyncSchaetzungenWithServerTask(mMgr,mSvrMgr, syncToServerSubject);
     
-    
-      final SyncSchaetzungenWithServerTask syncTask = new SyncSchaetzungenWithServerTask(mMgr,mSvrMgr);
     
       mHandler.post(syncTask);
     
@@ -147,10 +149,32 @@ public class SchaetzItSyncManager {
       mHandler.post(afterSyncTask);
     
     
-     final DownloadSchaetzungenFromServerTask downloadTask = new DownloadSchaetzungenFromServerTask(mMgr,mSvrMgr);
+     ReplaySubject<Integer> syncFromServerSubject = ReplaySubject.create();
+     final DownloadSchaetzungenFromServerTask downloadTask = new DownloadSchaetzungenFromServerTask(mMgr,mSvrMgr, syncFromServerSubject);
+    
+     
+    
+     syncFromServerSubject
+        //.subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .timeout(60, TimeUnit.SECONDS) //sync mit server und speichern in der DB sollte innerhalb von 10 Sekunden abgeschlossen sein
+        .subscribe(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer syncedCount) {
+                        onDownloadDoneCallback.onSuccess(syncedCount);
+                    }
+                },new Action1<Throwable>() {
+
+                  public void call(Throwable t1) {
+                      Log.d(TAG, "syncFromServerFailed: " + t1);
+                      onDownloadDoneCallback.onError(new Exception("Fehler beim Herunterladen vom Server. Details:" + downloadTask.getLastError() ));
+                  }
+              });
     
       mHandler.post(downloadTask);
     
+      //errorHandling wird mit dem syncFromServerSubject gemacht
+      /*
       Runnable afterDownloadTask = new Runnable() {
             @Override  
             public void run() {
@@ -163,6 +187,7 @@ public class SchaetzItSyncManager {
         }; 
 		
       mHandler.post(afterDownloadTask);
+      */
       
     }
 }
