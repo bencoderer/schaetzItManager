@@ -1,8 +1,15 @@
 package com.bencoderer.schaetzitmanager.managers;
 
+import rx.Observable;
+import rx.Subscription;
+import rx.schedulers.Schedulers;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+
 import java.lang.Runnable;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import com.bencoderer.schaetzitmanager.data.Operator;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
@@ -35,6 +42,8 @@ public class SchaetzItSyncManager {
     this.mSvrMgr = svrMgr;
     this.onNotification = onNotification;
     this.createHandlerThread();
+    
+    this.createTimer();
   }
   
   public SchaetzItServerManager getServerManager() {
@@ -80,6 +89,20 @@ public class SchaetzItSyncManager {
       Looper looper = mHandlerThread.getLooper();
       mHandler = new Handler(looper); 
     }
+  }
+  
+  private void createTimer() {
+    Observable<Long> observable = Observable.interval(10, TimeUnit.SECONDS);
+
+    Subscription syncNowSubscription = observable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<Long>() {
+                    @Override
+                    public void call(Long aLong) {
+                        syncSchaetzungenWithServer();
+                    }
+                });
   }
   
   public void doSyncNow() {
