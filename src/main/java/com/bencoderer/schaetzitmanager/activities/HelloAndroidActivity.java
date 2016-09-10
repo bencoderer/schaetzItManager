@@ -559,7 +559,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
     //((TextView)findViewById(R.id.anzahl_letzte_schaetzungen)).setText(coun(type[]) collection.toArray(new type[collection.size()]).toString()); //TODO crashes
     
     
-    this.getLoaderManager().initLoader(SCHAETZER_LOADER, null, new LoaderManager.LoaderCallbacks<Cursor>() {
+    this.getLoaderManager().restartLoader(SCHAETZER_LOADER, null, new LoaderManager.LoaderCallbacks<Cursor>() {
       @Override
       public android.content.Loader<Cursor> onCreateLoader(int arg0, Bundle cursor) {
         String filter = null;
