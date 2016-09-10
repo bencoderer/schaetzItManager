@@ -3,6 +3,7 @@ package com.bencoderer.schaetzitmanager.managers;
 import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
@@ -32,15 +33,23 @@ public class SchaetzItSyncManager {
   private SchaetzItServerManager mSvrMgr;
   private SimpleCallback onNotification;
   
+   private SimpleCallback onSyncDoneCallback;
+   private PublishSubject  syncToServerSubject = new ();
+  
   //https://medium.com/@ali.muzaffar/handlerthreads-and-why-you-should-be-using-them-in-your-android-apps-dc8bf1540341#.rmy4l6k9x
   //https://blog.nikitaog.me/2014/10/18/android-looper-handler-handlerthread-ii/
   private HandlerThread mHandlerThread = null;
   private Handler mHandler;
   
-  public SchaetzItSyncManager(SchaetzItManager mgr, SchaetzItServerManager svrMgr, SimpleCallback onNotification) {
+  public SchaetzItSyncManager(SchaetzItManager mgr, SchaetzItServerManager svrMgr, SimpleCallback onNotification, SimpleCallback onSyncDoneCallback) {
     this.mMgr = mgr;
     this.mSvrMgr = svrMgr;
     this.onNotification = onNotification;
+    this.onSyncDoneCallback = onSyncDoneCallback;
+    
+    this.syncToServerSubject = new PublishSubject();
+    this.syncFromServerSubject = new PublishSubject();
+    
     this.createHandlerThread();
     
     this.createTimer();
@@ -102,7 +111,12 @@ public class SchaetzItSyncManager {
                     public void call(Long aLong) {
                         syncSchaetzungenWithServer();
                     }
-                });
+                },new Action1<Throwable>() {
+
+                  public void call(Throwable t1) {
+                      t1.printStackTrace();
+                  }
+              });
   }
   
   public void doSyncNow() {
