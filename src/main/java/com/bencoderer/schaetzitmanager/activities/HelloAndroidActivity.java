@@ -371,7 +371,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
   public void onStart(){
       super.onStart();
       
-      this.loadLatestSchaetzungen();
+      //this.loadLatestSchaetzungen();
   }
   
   private class Holder<T> {
@@ -400,7 +400,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
       mMgr.setOperatorKey(null);
     }
     
-    
+    this.loadLatestSchaetzungen(); //maybe we changed the operator, so restart the loader
   }
   
   
@@ -554,17 +554,25 @@ protected void fillSchaetzerWithPersonData(Person person) {
     
     final Activity myActivity = this;
     int count = mMgr.getAllSchaetzer().size();
-    Log.d(myActivity.getClass().getSimpleName(), "reloading latest schaetzungen. Count:" + count);
+    Log.d(TAG, "reloading latest schaetzungen. Count:" + count);
       
     //((TextView)findViewById(R.id.anzahl_letzte_schaetzungen)).setText(coun(type[]) collection.toArray(new type[collection.size()]).toString()); //TODO crashes
     
     
-    this.getLoaderManager().initLoader(0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
+    this.getLoaderManager().initLoader(SCHAETZER_LOADER, null, new LoaderManager.LoaderCallbacks<Cursor>() {
       @Override
       public android.content.Loader<Cursor> onCreateLoader(int arg0, Bundle cursor) {
+        String filter = null;
+        String[] filterValues = null;
+        
+        if (mMgr.getOperatorKey() != null) {
+          filter = Schaetzer.OPERATORKEY_COLUMN + " = ?";
+          filterValues = new String[] {mMgr.getOperatorKey()};
+        }
+        
         return new CursorLoader(myActivity,
                                 ContentProvider.createUri(Schaetzer.class, null),
-                                null, null, null, Schaetzer.INDATE_COLUMN+" desc"
+                                null,filter , filterValues, Schaetzer.INDATE_COLUMN+" desc"
                                );
       }
 
