@@ -34,7 +34,6 @@ public class SchaetzItSyncManager {
     this.mMgr = mgr;
     this.mSvrMgr = svrMgr;
     this.onNotification = onNotification;
-    
     this.createHandlerThread();
   }
   
