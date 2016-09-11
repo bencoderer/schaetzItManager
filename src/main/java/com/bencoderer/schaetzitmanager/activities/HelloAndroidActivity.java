@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-  
+
+import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.PublishSubject;
+import rx.subjects.ReplaySubject;
 import rx.functions.Action1;
+
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -80,7 +83,7 @@ public class HelloAndroidActivity extends Activity {
     private MatchingPersonAdapter mMatchingPersonAdapter;
 
   
-    private PublishSubject<Integer> writeExcelFileSubject = PublishSubject.create();
+    private ReplaySubject<Integer> writeExcelFileSubject = ReplaySubject.create(60);
   
     private Date nextServerErrorShow = new Date(2000 - 1900, 1, 1);
 
@@ -101,8 +104,10 @@ public class HelloAndroidActivity extends Activity {
       
         final HelloAndroidActivity myActivity = this;
       
+        //this pipeline does not work yet
         writeExcelFileSubject
-          .debounce(5, TimeUnit.SECONDS)
+          .debounce(2, TimeUnit.SECONDS)
+          .observeOn(AndroidSchedulers.mainThread())
           .subscribe(new Action1<Integer>() {
                     @Override
                     public void call(Integer aLong) {
@@ -146,7 +151,8 @@ public class HelloAndroidActivity extends Activity {
               public void onSuccess(Object... objects) {
                 int syncedCount = (Integer)objects[0];
                 if (syncedCount > 0) {
-                  writeExcelFileSubject.onNext(0);
+                  //writeExcelFileSubject.onNext(0);
+                  exportSchaetzungenToDefaultExcelFile(false);
                 }
               }
 
@@ -616,7 +622,8 @@ protected void fillSchaetzerWithPersonData(Person person) {
         clearForm((ViewGroup)findViewById(R.id.schaetzer));
         nameAndAddr.requestFocus();
         
-        writeExcelFileSubject.onNext(1);
+        //writeExcelFileSubject.onNext(1);
+        exportSchaetzungenToDefaultExcelFile(false);
         loadLatestSchaetzungen();
         
         mSyncMgr.doSyncNow();
