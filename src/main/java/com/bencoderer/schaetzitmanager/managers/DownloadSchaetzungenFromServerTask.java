@@ -78,7 +78,7 @@ public class DownloadSchaetzungenFromServerTask extends ServerSyncTask implement
         final SchaetzerDTO curSchaetzer = schaetzer;
         List<Schaetzung> schaetzungen = SchaetzItSyncManager.convertSchaetzerDTOToSchaetzungen(curSchaetzer);
         
-        _mgr.addOrUpdateSchaetzerByOperator(schaetzer.getOperatorKey(),schaetzer.getIdInOperatorDb(), schaetzer.getNameAndAddress(), schaetzungen,null );
+        _mgr.addOrUpdateSchaetzerByOperator(schaetzer.getOperatorKey(),schaetzer.getIdInOperatorDb(),schaetzer.getIndateDate(), schaetzer.getNameAndAddress(), schaetzungen,null );
         
         _mgrSvr.setSchaetzerAsSyncedTo(curSchaetzer,curOperator, new SimpleCallback() {
               @Override

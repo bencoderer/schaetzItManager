@@ -109,7 +109,7 @@ public class ExportSchaetzungenToExcelFile extends AsyncTask<String,String,Boole
       
       for(Schaetzer schaetzer : schaetzerList)  {
         iColPos = 0;
-        label = new Label(iColPos, ++iRowPos, schaetzer.nameUndAdresse);
+        label = new Label(iColPos, ++iRowPos, schaetzer.nameUndAdresse + " ("+ schaetzer.operatorKey +")");
         sheet.addCell(label);
         
         for (Schaetzung schaetzung : schaetzer.schaetzungen()){

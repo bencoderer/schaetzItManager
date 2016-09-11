@@ -6,6 +6,7 @@ import com.bencoderer.schaetzitmanager.R;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
   
 import rx.subjects.PublishSubject;
@@ -80,6 +81,8 @@ public class HelloAndroidActivity extends Activity {
 
   
     private PublishSubject<Integer> writeExcelFileSubject = PublishSubject.create();
+  
+    private Date nextServerErrorShow = new Date(2000 - 1900, 1, 1);
 
     /**
      * Called when the activity is first created.
@@ -150,7 +153,14 @@ public class HelloAndroidActivity extends Activity {
               @Override
               public void onError(Throwable err) {
                   Log.e(TAG, err.toString());
-                  myActivity.sendNotification(err.getMessage());
+                  Log.d(TAG, "nextservererrorShow:"+  nextServerErrorShow);
+                  if (nextServerErrorShow.before(new Date())) {
+                    myActivity.sendNotification(err.getMessage());
+                     final long ONE_MINUTE_IN_MILLIS = 60000;//millisecs
+
+                     long curTimeInMs = new Date().getTime();
+                     nextServerErrorShow = new Date(curTimeInMs + (2 * ONE_MINUTE_IN_MILLIS));
+                  }
               }
             }                               
             ); 
@@ -220,6 +230,13 @@ public class HelloAndroidActivity extends Activity {
       
       vSchaetzerList.setAdapter(new ArrayAdapter<String>(this,R.layout.textview_schaetzer_list_item,list));
       */
+    }
+  
+  
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        this.mSyncMgr.quit();
     }
   
    /**
@@ -407,6 +424,9 @@ protected void fillSchaetzerWithPersonData(Person person) {
             }
       		);
             break;
+        case R.id.action_reset_syncstate_local:
+          resetSyncStateLocalDB();
+          break;
         }
       
         return true;
@@ -450,6 +470,17 @@ protected void fillSchaetzerWithPersonData(Person person) {
     this.loadLatestSchaetzungen(); //maybe we changed the operator, so restart the loader
   }
   
+  private void resetSyncStateLocalDB() {
+    try
+      {
+      showToast("Sync Status zurücksetzen...");
+      mMgr.resetSyncToServerState();
+      showToast("Sync Status zurücksetzen...erfolgreich");
+    }
+    catch(Exception ex) {
+      showToast("Reset SyncStatus Fehler:"+  ex);
+    }
+  }
   
   private void chooseOperator() {
     final List<Operator> opList = mMgr.getAllOperator();

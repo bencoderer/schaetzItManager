@@ -103,7 +103,8 @@ public class SchaetzItManager{
     item.indate = new Date();
     item.save();
     item.operatorDbId = item.getId().toString();
-    item.save();
+    Log.d(TAG, "OperatorDbId of new Schaetzer will be:" + item.operatorDbId);
+    item.save(); //save changed operatorDbId
     
     Schaetzung newS;
     int sortOrder = 1;
@@ -120,17 +121,24 @@ public class SchaetzItManager{
     return item;
   }
   
-  public void addOrUpdateSchaetzerByOperator(String operatorKey, String operatorDbId, String nameUndAdresse, List<Schaetzung> schaetzungen, Person person){
+  public void addOrUpdateSchaetzerByOperator(String operatorKey, String operatorDbId, Date indate, String nameUndAdresse, List<Schaetzung> schaetzungen, Person person){
     Schaetzer existing = getSchaetzerByOperator(operatorKey, operatorDbId);
     
     if (existing != null) {
       deleteSchaetzungenOfSchaetzer(existing);
     }
     else {
+      if (operatorKey.equals(this.getOperatorKey())) {
+        Log.w(TAG, "Neuer Schaetzer wird mit operatorKey " + operatorKey + " erzeugt, dies ist aber der aktuelle Operator! Nur logisch, wenn Wiederherstellung mit Serverdaten läuft!");
+      }
+      
       Log.i(TAG, "Neuer Schaetzer vom Operator " + operatorKey + "/" + operatorDbId + "  name:" + nameUndAdresse);
       existing = addSchaetzer(nameUndAdresse, null, null);
       existing.operatorKey = operatorKey;
       existing.operatorDbId = operatorDbId;
+      if (indate != null) {
+      	existing.indate = indate;
+      }
       existing.save(); //store operatorKey changes
     }
     
@@ -160,6 +168,15 @@ public void updateSchaetzer(Schaetzer item){
     item.save();
   }
   
+  
+  public void resetSyncToServerState() {
+    for(Schaetzer s : getAllSchaetzer()) {
+      s.sentToServerDate = null;
+      s.save();
+    }
+  }
+  
+  
   public List<Schaetzer> getAllSchaetzer() {
     return getAllSchaetzer(false);
   }
@@ -184,8 +201,8 @@ public void updateSchaetzer(Schaetzer item){
   
   public Schaetzer getSchaetzerByOperator(String operatorKey, String operatorDbId) {
     return (new Select().from(Schaetzer.class))
-          .where("operatorKey = ?", operatorKey)
-          .where("operatorDbId = ?", operatorDbId)
+          .where("operatorKey = ? and operatorDbId = ?", operatorKey, operatorDbId)
+          //.where("", operatorDbId)
           .executeSingle();
   }
   

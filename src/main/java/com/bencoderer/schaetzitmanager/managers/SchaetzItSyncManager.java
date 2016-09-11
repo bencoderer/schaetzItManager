@@ -4,6 +4,7 @@ import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 import rx.subjects.ReplaySubject;
+import rx.subjects.PublishSubject;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
@@ -61,10 +62,10 @@ public class SchaetzItSyncManager {
   }
   
   public static SchaetzerDTO convertSchaetzerToSchaetzerDTO(Schaetzer source, SchaetzerDTO result) {
-    result.setId(source.operatorKey + "_" + source.getId());
+    result.setId(getServerId(source));
     result.setOperatorKey(source.operatorKey);
     result.setNameAndAddress(source.nameUndAdresse);
-    result.setIdInOperatorDb(source.getId().toString());
+    result.setIdInOperatorDb(source.operatorDbId);
     result.setIndate(source.indate);
     
     Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
@@ -89,7 +90,7 @@ public class SchaetzItSyncManager {
   }
   
   public static String getServerId(Schaetzer source) {
-    return source.operatorKey + "_" + source.getId();
+    return source.operatorKey + "_" + source.operatorDbId;
   }
   
   public void createHandlerThread() {
@@ -101,11 +102,22 @@ public class SchaetzItSyncManager {
     }
   }
   
+  private Subscription syncInBackgroundSubscription = null;
+  private PublishSubject<Long> syncNowTrigger = PublishSubject.create();
+  
+  public void quit() {
+    mHandlerThread.quit();
+    if (syncInBackgroundSubscription != null) {
+    	syncInBackgroundSubscription.unsubscribe();
+    }
+  }
+  
   private void createTimer() {
-    Observable<Long> observable = Observable.interval(10, TimeUnit.SECONDS);
+    Observable<Long> interval = Observable.interval(10, TimeUnit.SECONDS).subscribeOn(Schedulers.io());
 
-    Subscription syncNowSubscription = observable
-                .subscribeOn(Schedulers.io())
+    syncInBackgroundSubscription = Observable
+                .merge(interval, syncNowTrigger)
+                .debounce(2, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<Long>() {
                     @Override
@@ -122,7 +134,7 @@ public class SchaetzItSyncManager {
   
   public void doSyncNow() {
     Log.d(TAG, "requested Sync with server");
-    syncSchaetzungenWithServer();
+    this.syncNowTrigger.onNext(-1L);
   }
   
   private void syncSchaetzungenWithServer() {

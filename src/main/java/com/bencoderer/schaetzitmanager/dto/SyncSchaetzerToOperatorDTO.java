@@ -1,5 +1,7 @@
 package com.bencoderer.schaetzitmanager.dto;
 
+import com.bencoderer.schaetzitmanager.helpers.ISODateHelper;
+
 import com.strongloop.android.loopback.Model;
 
 import java.text.DateFormat;
@@ -7,8 +9,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import android.util.Log;
+
 public class SyncSchaetzerToOperatorDTO extends Model {
 
+  public static final String TAG = com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity.TAG;
+  
   private String schaetzerId;
    
    private String operatorKey;
@@ -53,10 +59,7 @@ public class SyncSchaetzerToOperatorDTO extends Model {
   
   
   public void setSentToOperatorDate(Date sentToOperatorDate) {
-    //TimeZone tz = TimeZone.getTimeZone("UTC");
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-    //df.setTimeZone(tz);
-    this.sentToOperatorDate = df.format(sentToOperatorDate);
+    this.sentToOperatorDate = ISODateHelper.toStringJSON(sentToOperatorDate);
   }
  
   public String getSentToOperatorDate() {
@@ -64,7 +67,6 @@ public class SyncSchaetzerToOperatorDTO extends Model {
   }
   
   public Date getSentToOperatorDateAsDate() {
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     
     if (this.sentToOperatorDate == null){
       return null;
@@ -72,9 +74,10 @@ public class SyncSchaetzerToOperatorDTO extends Model {
     
     try
     {
-    	return df.parse(this.sentToOperatorDate);
+    	return ISODateHelper.fromStringJSON(this.sentToOperatorDate);
     }
     catch(ParseException ex) {
+      Log.e(TAG, "can not parse sentToOperatorDate-string:" + this.sentToOperatorDate);
       return null;
     }
   }

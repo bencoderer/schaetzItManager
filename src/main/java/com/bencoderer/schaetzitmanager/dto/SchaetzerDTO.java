@@ -1,15 +1,21 @@
 package com.bencoderer.schaetzitmanager.dto;
 
+import com.bencoderer.schaetzitmanager.helpers.ISODateHelper;
+
 import com.strongloop.android.loopback.Model;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+
+import android.util.Log;
  
 /**
  * 
  */
 public class SchaetzerDTO extends Model { 
+  
+  public static final String TAG = com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity.TAG;
   
   private String id;
   private String operatorKey;
@@ -65,10 +71,7 @@ public class SchaetzerDTO extends Model {
  
   
   public void setIndate(Date indate) {
-    //TimeZone tz = TimeZone.getTimeZone("UTC");
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-    //df.setTimeZone(tz);
-    this.indate = df.format(indate);
+    this.indate = ISODateHelper.toStringJSON(indate);
   }
   
   public String getIndate() {
@@ -76,12 +79,13 @@ public class SchaetzerDTO extends Model {
   }
  
   public Date getIndateDate() {
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+    
     try
     {
-    	return df.parse(this.indate);
+      return com.bencoderer.schaetzitmanager.helpers.ISODateHelper.fromStringJSON(this.indate);
     }
     catch(ParseException ex) {
+      Log.e(TAG, "can not parse indate-string:" + this.indate);
       return null;
     }
   }
