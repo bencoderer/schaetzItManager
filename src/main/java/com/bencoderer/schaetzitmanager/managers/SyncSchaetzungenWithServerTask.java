@@ -1,38 +1,25 @@
 package com.bencoderer.schaetzitmanager.managers;
 
+import rx.subjects.ReplaySubject;
+import rx.Observable;
+
+import java.util.Date;
 import java.util.List;
 import java.lang.Runnable;
-import android.os.AsyncTask;
 import android.util.Log;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
 import com.bencoderer.schaetzitmanager.data.Schaetzung;
 import com.bencoderer.schaetzitmanager.dto.SchaetzerDTO;
+import com.bencoderer.schaetzitmanager.helpers.SimpleCallback;
 
-public class SyncSchaetzungenWithServerTask implements Runnable {
+public class SyncSchaetzungenWithServerTask extends ServerSyncTask implements Runnable {
 
     public static final String TAG = com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity.TAG;
   
-    private SchaetzItManager _mgr;
-  
-    private SchaetzItServerManager _mgrSvr;
-    
-  
-    private String lastError;
-
-    private boolean status = false;
-  
-    public void setStatus(boolean status) {
-      this.status = status;
-    }
-
-    public boolean getStatus() {
-      return status;
-    }
     
 
-    public SyncSchaetzungenWithServerTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr) {
-      _mgr = mgr;
-      _mgrSvr = mgrSvr;
+    public SyncSchaetzungenWithServerTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr, ReplaySubject<Integer> syncDone) {
+       super(mgr, mgrSvr,syncDone);
     }
 
   
@@ -61,20 +48,28 @@ public class SyncSchaetzungenWithServerTask implements Runnable {
         return;
     }
   
-    public String getLastError() {
-      return this.lastError;
-    }
-  
-    
-  
+ 
     public void sendSchaetzungenToServer(List<Schaetzer> schaetzerList) {
       Log.i(TAG, "send schaetzerList with entries:" + schaetzerList.size());
       
       SchaetzerDTO schaetzerDTO;
       for(Schaetzer schaetzer : schaetzerList)  {
-        schaetzerDTO = SchaetzItSyncManager.convertSchaetzerToSchaetzerDTO(schaetzer, _mgrSvr.createSchaetzerDTO(SchaetzItSyncManager.getServerId(schaetzer)));
+        final Schaetzer curSchaetzer = schaetzer;
+        schaetzerDTO = SchaetzItSyncManager.convertSchaetzerToSchaetzerDTO(curSchaetzer, _mgrSvr.createSchaetzerDTO(SchaetzItSyncManager.getServerId(curSchaetzer)));
         
-        _mgrSvr.sendSchaetzerToServer(schaetzerDTO);
+        _mgrSvr.sendSchaetzerToServer(schaetzerDTO, new SimpleCallback() {
+
+              @Override
+              public void onSuccess(Object... objects) {
+                curSchaetzer.sentToServerDate = new Date();
+                _mgr.updateSchaetzer(curSchaetzer);
+              }
+
+              @Override
+              public void onError(Throwable err) {
+                  Log.e(TAG, err.toString());
+              }
+            });
       }
     }
 }

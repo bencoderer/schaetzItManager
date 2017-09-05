@@ -17,6 +17,13 @@
 
     <repositories>
       <repository>
+          <id>central</id>
+          <url>https://repo1.maven.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+      </repository>
+      <repository>
         <id>sonatype</id>
         <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
       </repository>
@@ -63,6 +70,21 @@
           <artifactId>gson</artifactId>
           <version>2.7</version>
       </dependency>
+      
+      <dependency>
+          <groupId>io.reactivex</groupId>
+          <artifactId>rxjava</artifactId>
+          <version>1.1.10</version>
+      </dependency>
+      
+      <!-- https://mvnrepository.com/artifact/io.reactivex/rxandroid -->
+    <dependency>
+        <groupId>io.reactivex</groupId>
+        <artifactId>rxandroid</artifactId>
+        <version>1.2.1</version>
+        <type>aar</type>
+    </dependency>
+
 
       <!-- POI lib is too big for android projects, DEX limit -->
       <!--

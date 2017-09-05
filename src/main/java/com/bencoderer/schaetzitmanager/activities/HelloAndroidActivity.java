@@ -6,6 +6,14 @@ import com.bencoderer.schaetzitmanager.R;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
+import rx.android.schedulers.AndroidSchedulers;
+import rx.subjects.PublishSubject;
+import rx.subjects.ReplaySubject;
+import rx.functions.Action1;
+
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -73,7 +81,11 @@ public class HelloAndroidActivity extends Activity {
     private List<Person> mMatchingPersons;
     private ListView vMatchingPersons;
     private MatchingPersonAdapter mMatchingPersonAdapter;
-    
+
+  
+    private ReplaySubject<Integer> writeExcelFileSubject = ReplaySubject.create(60);
+  
+    private Date nextServerErrorShow = new Date(2000 - 1900, 1, 1);
 
     /**
      * Called when the activity is first created.
@@ -92,11 +104,35 @@ public class HelloAndroidActivity extends Activity {
       
         final HelloAndroidActivity myActivity = this;
       
+        //this pipeline does not work yet
+        writeExcelFileSubject
+          .debounce(2, TimeUnit.SECONDS)
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribe(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer aLong) {
+                      try
+                        {
+                        exportSchaetzungenToDefaultExcelFile(false);
+                      }
+                      catch(Exception ex) {
+                        Log.e(TAG, "Schreiben der Excel-Datei:"+  ex);
+                      }
+                    }
+                },new Action1<Throwable>() {
+
+                  public void call(Throwable t1) {
+                      t1.printStackTrace();
+                  }
+              });
+      
         mMgr = new SchaetzItManager();
         mServerMgr = new SchaetzItServerManager(myContext); 
       
         mSyncMgr = new SchaetzItSyncManager(mMgr, new SchaetzItServerManager(myContext), new SimpleCallback() {
 
+              /*onNOTIFICATION*/
+          
               @Override
               public void onSuccess(Object... objects) {
                 myActivity.sendNotification(objects[0].toString());
@@ -106,7 +142,34 @@ public class HelloAndroidActivity extends Activity {
               public void onError(Throwable err) {
                   Log.e(TAG, err.toString());
               }
-            }); 
+            },
+            new SimpleCallback() {
+
+              /*onDownloadDone*/
+          
+              @Override
+              public void onSuccess(Object... objects) {
+                int syncedCount = (Integer)objects[0];
+                if (syncedCount > 0) {
+                  //writeExcelFileSubject.onNext(0);
+                  exportSchaetzungenToDefaultExcelFile(false);
+                }
+              }
+
+              @Override
+              public void onError(Throwable err) {
+                  Log.e(TAG, err.toString());
+                  Log.d(TAG, "nextservererrorShow:"+  nextServerErrorShow);
+                  if (nextServerErrorShow.before(new Date())) {
+                    myActivity.sendNotification(err.getMessage());
+                     final long ONE_MINUTE_IN_MILLIS = 60000;//millisecs
+
+                     long curTimeInMs = new Date().getTime();
+                     nextServerErrorShow = new Date(curTimeInMs + (2 * ONE_MINUTE_IN_MILLIS));
+                  }
+              }
+            }                               
+            ); 
       
       vSchaetzerList = (ListView)this.findViewById(R.id.listNeuesteSchaetzungen);
       this.registerForContextMenu(vSchaetzerList);
@@ -173,6 +236,13 @@ public class HelloAndroidActivity extends Activity {
       
       vSchaetzerList.setAdapter(new ArrayAdapter<String>(this,R.layout.textview_schaetzer_list_item,list));
       */
+    }
+  
+  
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        this.mSyncMgr.quit();
     }
   
    /**
@@ -360,6 +430,9 @@ protected void fillSchaetzerWithPersonData(Person person) {
             }
       		);
             break;
+        case R.id.action_reset_syncstate_local:
+          resetSyncStateLocalDB();
+          break;
         }
       
         return true;
@@ -371,7 +444,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
   public void onStart(){
       super.onStart();
       
-      this.loadLatestSchaetzungen();
+      //this.loadLatestSchaetzungen();
   }
   
   private class Holder<T> {
@@ -379,8 +452,16 @@ protected void fillSchaetzerWithPersonData(Person person) {
   }
   
   private void loadCurrentOperator() {
-    //XloadCurrentOperator
+    //yXloadCurrentOperator
     this.currentOperator = mMgr.getCurrentOperator();
+    
+    ArrayList<OperatorDTO> opList = new ArrayList<OperatorDTO>();
+    for(Operator op : this.mMgr.getAllOperator()) {
+      opList.add(SchaetzItSyncManager.convertOperatorToOperatorDTO(op));
+    }
+    
+    this.mSyncMgr.getServerManager().setOperatorListForSync(opList);
+    
     
     TextView operatorName = (TextView) findViewById(R.id.operatorName);
     if (this.currentOperator != null) {
@@ -392,9 +473,20 @@ protected void fillSchaetzerWithPersonData(Person person) {
       mMgr.setOperatorKey(null);
     }
     
-    
+    this.loadLatestSchaetzungen(); //maybe we changed the operator, so restart the loader
   }
   
+  private void resetSyncStateLocalDB() {
+    try
+      {
+      showToast("Sync Status zurücksetzen...");
+      mMgr.resetSyncToServerState();
+      showToast("Sync Status zurücksetzen...erfolgreich");
+    }
+    catch(Exception ex) {
+      showToast("Reset SyncStatus Fehler:"+  ex);
+    }
+  }
   
   private void chooseOperator() {
     final List<Operator> opList = mMgr.getAllOperator();
@@ -530,6 +622,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
         clearForm((ViewGroup)findViewById(R.id.schaetzer));
         nameAndAddr.requestFocus();
         
+        //writeExcelFileSubject.onNext(1);
         exportSchaetzungenToDefaultExcelFile(false);
         loadLatestSchaetzungen();
         
@@ -546,17 +639,25 @@ protected void fillSchaetzerWithPersonData(Person person) {
     
     final Activity myActivity = this;
     int count = mMgr.getAllSchaetzer().size();
-    Log.d(myActivity.getClass().getSimpleName(), "reloading latest schaetzungen. Count:" + count);
+    Log.d(TAG, "reloading latest schaetzungen. Count:" + count);
       
     //((TextView)findViewById(R.id.anzahl_letzte_schaetzungen)).setText(coun(type[]) collection.toArray(new type[collection.size()]).toString()); //TODO crashes
     
     
-    this.getLoaderManager().initLoader(0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
+    this.getLoaderManager().restartLoader(SCHAETZER_LOADER, null, new LoaderManager.LoaderCallbacks<Cursor>() {
       @Override
       public android.content.Loader<Cursor> onCreateLoader(int arg0, Bundle cursor) {
+        String filter = null;
+        String[] filterValues = null;
+        
+        if (mMgr.getOperatorKey() != null) {
+          filter = Schaetzer.OPERATORKEY_COLUMN + " = ?";
+          filterValues = new String[] {mMgr.getOperatorKey()};
+        }
+        
         return new CursorLoader(myActivity,
                                 ContentProvider.createUri(Schaetzer.class, null),
-                                null, null, null, Schaetzer.INDATE_COLUMN+" desc"
+                                null,filter , filterValues, Schaetzer.INDATE_COLUMN+" desc"
                                );
       }
 

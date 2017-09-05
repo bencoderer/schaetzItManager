@@ -29,6 +29,10 @@ public class Schaetzer extends BaseModel {
     public String operatorKey; //add thk 20.08.2016
   
   
+    public static final String OPERATORDBID_COLUMN = "OperatorDbId";
+    @Column(name = OPERATORDBID_COLUMN)
+    public String operatorDbId; //add thk 03.09.2016
+  
     public static final String SENTTOSERVERDATE_COLUMN = "SentToServerDate";
     @Column(name = SENTTOSERVERDATE_COLUMN)
     public Date sentToServerDate; //add thk 20.08.2016
