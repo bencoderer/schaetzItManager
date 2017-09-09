@@ -42,14 +42,17 @@
                                 android:gravity="center"
                                         >
                             <!-- column 1 -->
+                            
+                            <!-- this label is not really required   
                             <TextView
                               android:layout_width="fill_parent"
                               android:layout_height="wrap_content" android:padding="10dp"
                               
                               android:text="@string/schaetzer_ref" android:textSize="20sp" />
-
+                             -->
                              <EditText android:id="@+id/schaetzerRef" android:layout_width="match_parent"
                               android:layout_height="wrap_content" android:ems="10"
+                              android:textSize="35sp"
                               android:hint="@string/schaetzer_ref_hint"
                               android:inputType="text"
                               android:imeOptions="actionNext"
@@ -132,15 +135,17 @@
                                           style="@style/SchaetzwertInput"
                                   > 
                                  </EditText>
+                                 
+                                <Button
+                                    android:id="@+id/addSchaetzungButton"
+                                    android:onClick="addSchaetzung"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/addSchaetzung" />
                               </LinearLayout>
                             </LinearLayout>
                             
-                             <Button
-                                android:id="@+id/addSchaetzungButton"
-                                android:onClick="addSchaetzung"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/addSchaetzung" />
+                             
                             
                             <LinearLayout 
                                           android:orientation="horizontal"

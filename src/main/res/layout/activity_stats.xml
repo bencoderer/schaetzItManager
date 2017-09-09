@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TableLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:shrinkColumns="*" 
+            android:stretchColumns="*">
+	<TableRow
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:gravity="center_horizontal">
+
+			
+		<TextView
+			android:id="@+id/statsHeaderOperatorName"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+             android:text="@string/stats_header_operatorName"
+			android:textSize="15sp" />
+	   <TextView
+			android:id="@+id/statsHeaderSchaetzerCount"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+             android:text="@string/stats_header_schaetzer"
+			android:textSize="15sp" />
+	   <TextView
+			android:id="@+id/statsHeaderSchaetzerSyncedCount"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+             android:text="@string/stats_header_schaetzerSynced"
+			android:textSize="15sp" />
+			
+	</TableRow>
+	
+	<TableRow
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:gravity="center_horizontal">
+
+		<!-- OP1 stats -->
+		<TextView
+			android:id="@+id/statsOP1OperatorName"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="20sp" />
+	   <TextView
+			android:id="@+id/statsOP1SchaetzerCount"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="25sp" />
+	   <TextView
+			android:id="@+id/statsOP1SchaetzerSyncedCount"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="25sp" />
+			
+	</TableRow>
+	
+	<TableRow
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:gravity="center_horizontal">
+
+		<!-- OP2 stats -->
+		<TextView
+			android:id="@+id/statsOP2OperatorName"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="20sp" />
+	   <TextView
+			android:id="@+id/statsOP2SchaetzerCount"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="25sp" />
+	   <TextView
+			android:id="@+id/statsOP2SchaetzerSyncedCount"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="25sp" />
+			
+	</TableRow>
+	
+	<TableRow
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:gravity="center_horizontal">
+		<!--
+	<Button
+        android:id="@+id/writeExcelFileButton"
+        android:onClick="writeExcelFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/writeExcelFile" />
+    -->
+    
+    </TableRow>
+    <TableRow
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:gravity="left">
+
+        <LinearLayout 
+          android:orientation="horizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          >		
+	   <TextView
+			android:id="@+id/statsLastUploadHeader"
+			android:text="@string/stats_header_lastUpload"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="20sp" />
+	   <TextView
+			android:id="@+id/statsLastUpload"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="25sp" />
+	   </LinearLayout>
+			
+	</TableRow>
+    <TableRow
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:gravity="left">
+		 <LinearLayout 
+          android:orientation="horizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          >
+	   <TextView
+			android:id="@+id/statsLastDownloadHeader"
+			android:text="@string/stats_header_lastDownload"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="20sp" />
+	   <TextView
+			android:id="@+id/statsLastDownload"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"  
+            android:layout_width="0dp"
+			android:textSize="25sp" />
+	   </LinearLayout>
+	</TableRow>
+</TableLayout>
+
+ 

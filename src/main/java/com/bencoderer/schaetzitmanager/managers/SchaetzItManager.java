@@ -2,7 +2,7 @@ package com.bencoderer.schaetzitmanager.managers;
 
 import java.util.Date;
 import java.util.List;
-
+import android.provider.BaseColumns;
 import android.util.Log;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.From;
@@ -190,6 +190,14 @@ public void updateSchaetzer(Schaetzer item){
     list = new Select().from(Schaetzer.class);
     return list.orderBy("Indate asc").execute();
   }
+
+
+  public Schaetzer getSchaetzerById(int id) {
+    From list = new Select().from(Schaetzer.class);
+    
+    return list.where(BaseColumns._ID + " = ?", id)
+            .executeSingle();
+  }
   
   
   public List<Schaetzer> getSchaetzerToSyncToServer() {
@@ -204,6 +212,18 @@ public void updateSchaetzer(Schaetzer item){
           .where("operatorKey = ? and operatorDbId = ?", operatorKey, operatorDbId)
           //.where("", operatorDbId)
           .executeSingle();
+  }
+  
+   public int countSchaetzerOfOperator(String operatorKey) {
+    return (new Select().from(Schaetzer.class))
+          .where("operatorKey = ?", operatorKey)
+          .count();
+  }
+  
+  public int countSchaetzerOfOperatorSynced(String operatorKey) {
+      return (new Select().from(Schaetzer.class))
+          .where("operatorKey = ? and sentToServerDate is not NULL", operatorKey)
+          .count();
   }
   
   

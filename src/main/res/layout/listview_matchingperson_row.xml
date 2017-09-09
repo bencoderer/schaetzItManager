@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="6dip">
  
     <TextView
@@ -10,7 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:textSize="18sp"
+        android:textSize="35sp"
+        android:layout_marginRight="5sp"
         /> 
      <TextView
         android:id="@+id/matchingperson_adresse"
@@ -18,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/matchingperson_name"
         android:text="@string/schaetzer_ref"
-        android:textSize="14sp"
+        android:textSize="30sp"
         
         /> 
   <!--

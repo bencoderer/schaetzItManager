@@ -31,6 +31,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name="com.bencoderer.schaetzitmanager.activities.StatsActivity" >
+        </activity>
     </application>
 
 </manifest>

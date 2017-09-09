@@ -9,7 +9,15 @@
     <string name="hello_world">Hello world!</string>
     <string name="schaetzer_ref_hint">Name und Adresse des Schätzers</string>
     <string name="schaetzer_ref">Schätzer</string>
+    
+    <string name="action_show_stats">Statistik anzeigen</string>
     <string name="action_reset_schaetzungen">Schätzungen zurücksetzen</string>
     <string name="action_choose_operator">Benutzer auswählen</string>
     <string name="action_reset_syncstate_local">Lokalen SyncStatus löschen</string>
+    <string name="stats_header_operatorName">Benutzer</string>
+    <string name="stats_header_schaetzer">Schätzer Anzahl</string>
+    <string name="stats_header_schaetzerSynced">Schätzer Synced Anzahl</string>
+    <string name="stats_header_lastUpload">Letzter Upload</string>
+    <string name="stats_header_lastDownload">Letzter Download</string>
+    <string name="writeExcelFile">Excel Datei erstellen</string>
 </resources>

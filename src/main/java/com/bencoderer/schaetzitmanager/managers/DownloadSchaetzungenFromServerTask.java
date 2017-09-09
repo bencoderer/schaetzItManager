@@ -17,6 +17,7 @@ public class DownloadSchaetzungenFromServerTask extends ServerSyncTask implement
 
     public static final String TAG = com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity.TAG;
    
+    public static Date lastSuccessRun = null;
 
     public DownloadSchaetzungenFromServerTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr, ReplaySubject<Integer> syncDone) {
       super(mgr, mgrSvr,syncDone);
@@ -52,6 +53,8 @@ public class DownloadSchaetzungenFromServerTask extends ServerSyncTask implement
                 }
 
           });
+
+          lastSuccessRun = new Date();
 
           this.status = true;
           return;

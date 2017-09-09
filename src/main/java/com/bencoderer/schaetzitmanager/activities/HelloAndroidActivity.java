@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.BaseColumns;
 import android.support.v4.app.NotificationCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -33,6 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -42,6 +44,7 @@ import android.widget.Toast;
 import com.bencoderer.schaetzitmanager.adapters.MatchingPersonAdapter;
 import com.bencoderer.schaetzitmanager.data.Person;
 import com.bencoderer.schaetzitmanager.data.Schaetzer;
+import com.bencoderer.schaetzitmanager.data.Schaetzung;
 import com.bencoderer.schaetzitmanager.data.Operator;
 import com.bencoderer.schaetzitmanager.dto.OperatorDTO;
 import com.bencoderer.schaetzitmanager.helpers.FileDialog;
@@ -236,6 +239,8 @@ public class HelloAndroidActivity extends Activity {
       
       vSchaetzerList.setAdapter(new ArrayAdapter<String>(this,R.layout.textview_schaetzer_list_item,list));
       */
+     
+      showToast("erstellt");
     }
   
   
@@ -296,7 +301,7 @@ public class HelloAndroidActivity extends Activity {
   
   protected int exportInterval = 1;
   
-    protected void exportSchaetzungenToDefaultExcelFile(final boolean exportAndClear) {
+  protected void exportSchaetzungenToDefaultExcelFile(final boolean exportAndClear) {
       String postfix = "";
       if (exportAndClear) {
         postfix = "-preclean";
@@ -343,7 +348,30 @@ public class HelloAndroidActivity extends Activity {
 protected void fillSchaetzerWithPersonData(Person person) {
      vSchaetzerRef.setTag(person);
      vSchaetzerRef.setText(person.name + ", " + person.adresse);
+     
+     EditText schaetzung01 = (EditText) findViewById(R.id.schaetzung01);
+     schaetzung01.requestFocus();
    }
+   
+private void fillInputsWithSchaetzer(Schaetzer schaetzer, boolean includeSchaetzungen) {
+      clearForm((ViewGroup)findViewById(R.id.schaetzer));
+      
+      if (schaetzer != null) {
+          EditText nameAndAddr = (EditText) findViewById(R.id.schaetzerRef);
+          nameAndAddr.setText(schaetzer.nameUndAdresse);
+          
+          if (includeSchaetzungen) {
+              fillAllSchaetzwerte((ViewGroup)findViewById(R.id.schaetzwerte), schaetzer.schaetzungen());
+          }
+          else {
+              EditText schaetzung01 = (EditText) findViewById(R.id.schaetzung01);
+              schaetzung01.requestFocus();
+          }
+      }
+      else {
+          showToast("Kein Schätzer zum Kopieren definiert");
+      }
+  }
   
    /**
      * @param string
@@ -384,15 +412,41 @@ protected void fillSchaetzerWithPersonData(Person person) {
       task.execute(lookupText);
     }
 
+    private static final int SCHAETZERLIST_CONTEXTMENU_COPY = 10;
+    private static final int SCHAETZERLIST_CONTEXTMENU_COPY_WITH_SCHAETZUNGEN = 11;
+
 @Override
    public void onCreateContextMenu(ContextMenu menu, View v,
            ContextMenuInfo menuInfo) {
        super.onCreateContextMenu(menu, v, menuInfo);
        
-       //menu.setHeaderTitle("Context Menu");
-       menu.add(0, v.getId(), 0, "Löschen");
-       menu.add(0, v.getId(), 0, "Action 2");
+       menu.setHeaderTitle("Vorhandener Schätzer");
+       menu.add(0, SCHAETZERLIST_CONTEXTMENU_COPY, 0, "Kopieren");
+       menu.add(0, 0, 0, "-");
+       menu.add(0, SCHAETZERLIST_CONTEXTMENU_COPY_WITH_SCHAETZUNGEN, 0, "Kopieren mit Schätzwerten");
    }
+
+@Override
+public boolean onContextItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+    case SCHAETZERLIST_CONTEXTMENU_COPY:
+    case SCHAETZERLIST_CONTEXTMENU_COPY_WITH_SCHAETZUNGEN:
+        boolean includeSchaetzungen = item.getItemId() == SCHAETZERLIST_CONTEXTMENU_COPY_WITH_SCHAETZUNGEN;
+    
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        Log.d(TAG, "kopiere vorhandener Schätzer pos=" + info.position);
+        
+        
+        Cursor c = ((SimpleCursorAdapter)vSchaetzerList.getAdapter()).getCursor();
+        c.moveToPosition(info.position);
+        
+        int schaetzerId = c.getInt(c.getColumnIndex(BaseColumns._ID));
+        fillInputsWithSchaetzer(mMgr.getSchaetzerById(schaetzerId), includeSchaetzungen);
+        return true;
+    default:
+        return super.onContextItemSelected(item);
+    }
+}
 
 
     @Override
@@ -433,6 +487,10 @@ protected void fillSchaetzerWithPersonData(Person person) {
         case R.id.action_reset_syncstate_local:
           resetSyncStateLocalDB();
           break;
+        case R.id.action_show_stats:
+            Intent intent = new  Intent(getBaseContext(), StatsActivity.class);
+           startActivity(intent);
+        break;
         }
       
         return true;
@@ -477,6 +535,7 @@ protected void fillSchaetzerWithPersonData(Person person) {
   }
   
   private void resetSyncStateLocalDB() {
+    //yxResetSyncstatelocaldb
     try
       {
       showToast("Sync Status zurücksetzen...");
@@ -633,6 +692,8 @@ protected void fillSchaetzerWithPersonData(Person person) {
         Log.e(TAG, "exception in addSchaetzung", e);
       }
 	}
+	
+  
 
   private void loadLatestSchaetzungen() {
     //final ListView schaetzerList = (ListView)findViewById(R.id.listNeuesteSchaetzungen);
@@ -701,6 +762,21 @@ private void showToast(String msg) {
 	 }//foreach group
   }
   
+  private void fillAllSchaetzwerte(ViewGroup group, List<Schaetzung> schaetzungen)
+  {       
+    for (int i = 0, count = group.getChildCount(); i < count; ++i) {
+      if (schaetzungen.size() <= 0) break; //keine schaetzungen mehr verteilbar
+        
+      View view = group.getChildAt(i);
+      if (view instanceof EditText) {
+          ((EditText)view).setText(String.valueOf(schaetzungen.get(0).schaetzwert));
+          schaetzungen.remove(0);
+      }
+      else if (view instanceof ViewGroup) {
+        fillAllSchaetzwerte((ViewGroup)view, schaetzungen);
+      }
+	 }//foreach group
+  }
   
   
   private void clearForm(ViewGroup group)

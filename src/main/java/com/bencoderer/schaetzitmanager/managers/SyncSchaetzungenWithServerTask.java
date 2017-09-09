@@ -16,6 +16,7 @@ public class SyncSchaetzungenWithServerTask extends ServerSyncTask implements Ru
 
     public static final String TAG = com.bencoderer.schaetzitmanager.activities.HelloAndroidActivity.TAG;
   
+    public static Date lastSuccessRun = null;
     
 
     public SyncSchaetzungenWithServerTask(SchaetzItManager mgr, SchaetzItServerManager mgrSvr, ReplaySubject<Integer> syncDone) {
@@ -36,6 +37,8 @@ public class SyncSchaetzungenWithServerTask extends ServerSyncTask implements Ru
           
           sendSchaetzungenToServer(curSchaetzungen);
           this.status = true;
+          lastSuccessRun = new Date();
+          
           return;
         }
         catch(Throwable e) {

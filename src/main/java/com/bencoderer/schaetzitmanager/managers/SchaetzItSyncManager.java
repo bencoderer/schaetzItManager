@@ -169,7 +169,7 @@ public class SchaetzItSyncManager {
      syncFromServerSubject
         //.subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .timeout(60, TimeUnit.SECONDS) //sync mit server und speichern in der DB sollte innerhalb von 10 Sekunden abgeschlossen sein
+        .timeout(60, TimeUnit.SECONDS) //sync mit server und speichern in der DB sollte innerhalb von 60 Sekunden abgeschlossen sein
         .subscribe(new Action1<Integer>() {
                     @Override
                     public void call(Integer syncedCount) {

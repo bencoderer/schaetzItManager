@@ -5,12 +5,18 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_import_persons"/>
-  
+
     <item
         android:id="@+id/action_reset_schaetzungen"
         android:orderInCategory="200"
         android:showAsAction="never"
         android:title="@string/action_reset_schaetzungen"/>
+  
+  <item
+        android:id="@+id/action_show_stats"
+        android:orderInCategory="250"
+        android:showAsAction="never"
+        android:title="@string/action_show_stats"/>
   <item
         android:id="@+id/action_reset_syncstate_local"
         android:orderInCategory="300"
